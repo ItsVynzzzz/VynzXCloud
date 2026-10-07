@@ -27,8 +27,26 @@ jobs:
             echo "== $f"
             patch -p1 -N -i "$f" || echo "GAGAL: $f"
           done
-      - run: cd android && ./gradlew assembleDebug
+      - name: Sesuaikan build.gradle untuk Linux
+        run: |
+          sed -i 's/return "darwin-x86_64"/return "linux-x86_64"/' android/app/build.gradle
+          sed -i 's/applicationId "com.xstreaming"/applicationId "com.vynz.xcloud"/' android/app/build.gradle
+          grep -n 'linux-x86_64\|applicationId' android/app/build.gradle
+      - name: Siapkan target Rust
+        run: rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+      - name: Siapkan keystore
+        run: |
+          cd android/app
+          [ -f debug.keystore ] || keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - name: Build APK release
+        run: |
+          cd android
+          ./gradlew assembleProdRelease \
+            -PXSTREAMING_RELEASE_STORE_FILE=debug.keystore \
+            -PXSTREAMING_RELEASE_STORE_PASSWORD=android \
+            -PXSTREAMING_RELEASE_KEY_ALIAS=androiddebugkey \
+            -PXSTREAMING_RELEASE_KEY_PASSWORD=android
       - uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/prod/release/*.apk
