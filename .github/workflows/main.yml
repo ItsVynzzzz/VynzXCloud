@@ -16,6 +16,8 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: yarn install
+        env:
+          CI: "false"
       - run: cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
