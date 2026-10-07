@@ -1,5 +1,10 @@
 name: Build APK
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,9 +20,13 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - run: yarn install
-        env:
-          CI: "false"
+      - run: yarn install --mode=skip-build
+      - name: Terapkan patch satu per satu
+        run: |
+          for f in patches/*.patch; do
+            echo "== $f"
+            patch -p1 -N -i "$f" || echo "GAGAL: $f"
+          done
       - run: cd android && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
