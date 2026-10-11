@@ -166,7 +166,7 @@ const defaultSettings: Settings = {
   right_trigger_type: 0,
   right_trigger_effects: [],
   ipv6: false,
-  check_update: true,
+  check_update: false,
   power_on: false,
   use_inner_turn_server: false,
   server_url: '',

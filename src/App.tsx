@@ -344,7 +344,7 @@ function App() {
   }, [openTitleShortcut]);
 
   React.useEffect(() => {
-    if (!settings.check_update || updateCheckedRef.current) {
+    if (true || !settings.check_update || updateCheckedRef.current) {
       return;
     }
 
