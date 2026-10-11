@@ -1,0 +1,35 @@
+name: Terapkan patch UI
+on:
+  push:
+    paths: ['patches-ui/*.patch']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Terapkan patch
+        run: |
+          mkdir -p patches-ui/.applied
+          for p in patches-ui/*.patch; do
+            n=$(basename "$p")
+            [ -f "patches-ui/.applied/$n" ] && continue
+            echo "== $n"
+            patch -p1 -N --no-backup-if-mismatch < "$p" || echo "::warning::ada bagian yang gagal di $n"
+            touch "patches-ui/.applied/$n"
+          done
+          find . -name '*.rej' -not -path './node_modules/*' -delete
+      - name: Commit dan jalankan build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add -A
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -m "Terapkan patch UI"
+          git push
+          gh workflow run main.yml
