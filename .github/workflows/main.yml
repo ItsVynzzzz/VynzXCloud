@@ -1,3 +1,4 @@
+name: Build APK
 on:
   push:
     branches: [main]
@@ -5,3 +6,52 @@ on:
       - '**.md'
       - 'patches-ui/**'
   workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: yarn install --mode=skip-build
+      - name: Terapkan patch satu per satu
+        run: |
+          for f in patches/*.patch; do
+            echo "== $f"
+            patch -p1 -N < "$f" || echo "GAGAL: $f"
+          done
+      - name: Sesuaikan build.gradle untuk Linux
+        run: |
+          sed -i 's/return "darwin-x86_64"/return "linux-x86_64"/' android/app/build.gradle
+          sed -i 's/applicationId "com.xstreaming"/applicationId "com.vynz.xcloud"/' android/app/build.gradle
+          grep -n 'linux-x86_64\|applicationId' android/app/build.gradle
+      - name: Siapkan target Rust
+        run: rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+      - name: Siapkan keystore
+        run: |
+          cd android/app
+          [ -f debug.keystore ] || keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+      - name: Build APK release
+        run: |
+          cd android
+          for i in 1 2 3; do
+            ./gradlew assembleProdRelease \
+              -PXSTREAMING_RELEASE_STORE_FILE=debug.keystore \
+              -PXSTREAMING_RELEASE_STORE_PASSWORD=android \
+              -PXSTREAMING_RELEASE_KEY_ALIAS=androiddebugkey \
+              -PXSTREAMING_RELEASE_KEY_PASSWORD=android && exit 0
+            echo "Build gagal, coba lagi ($i/3)"; sleep 20
+          done
+          exit 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: android/app/build/outputs/apk/prod/release/*.apk
