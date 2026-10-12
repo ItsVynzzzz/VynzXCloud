@@ -40,6 +40,7 @@ public class DPadView extends CustomView {
     private Drawable drawableDownLeft;
     private Drawable drawableDownRight;
     private int activePointerId = -1;
+    private final ButtonHaptics haptics;
 
     public DPadView(Context context) {
         this(context, null);
@@ -51,6 +52,7 @@ public class DPadView extends CustomView {
 
     public DPadView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        haptics = new ButtonHaptics(context);
         setClickable(true);
         loadDrawables(context);
     }
@@ -120,6 +122,7 @@ public class DPadView extends CustomView {
             emitPressOut(toDirectionNames(released));
         }
         if (!pressed.isEmpty()) {
+            haptics.trigger();
             emitPressIn(toDirectionNames(pressed));
         }
 
@@ -130,50 +133,36 @@ public class DPadView extends CustomView {
         float width = Math.max(1f, getWidth());
         float height = Math.max(1f, getHeight());
         float radius = Math.max(1f, Math.min(width, height) / 2f);
-        float centerX = width / 2f;
-        float centerY = height / 2f;
-
-        float dx = (touchX - centerX) / radius;
-        float dy = (touchY - centerY) / radius;
+        float dx = (touchX - width / 2f) / radius;
+        float dy = (touchY - height / 2f) / radius;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
-        if (distance < 0.3f) {
+        // Zona mati lebih kecil, dengan histeresis supaya arah tidak putus-putus
+        float dead = activeDirections.isEmpty() ? 0.22f : 0.16f;
+        if (distance < dead) {
             return EnumSet.noneOf(Direction.class);
         }
-
-        float angle = (float) Math.atan2(-dy, dx);
-        if (angle < 0) {
-            angle += (float) (Math.PI * 2);
+        float deg = (float) Math.toDegrees(Math.atan2(-dy, dx));
+        if (deg < 0f) {
+            deg += 360f;
         }
-
-        float sector = (float) (Math.PI / 8);
-        float threeSectors = sector * 3;
-        float fiveSectors = sector * 5;
-        float sevenSectors = sector * 7;
-        float nineSectors = sector * 9;
-        float elevenSectors = sector * 11;
-        float thirteenSectors = sector * 13;
-        float fifteenSectors = sector * 15;
-
-        if (angle < sector || angle >= fifteenSectors) {
-            return EnumSet.of(Direction.RIGHT);
+        // Arah lurus diberi sektor lebih lebar daripada diagonal; sektor arah aktif sedikit diperlebar
+        float cardinalHalf = activeDirections.size() == 2 ? 25f : 33f;
+        float[] centers = {0f, 90f, 180f, 270f};
+        Direction[] cardinals = {Direction.RIGHT, Direction.UP, Direction.LEFT, Direction.DOWN};
+        for (int i = 0; i < 4; i++) {
+            float diff = Math.abs(((deg - centers[i] + 540f) % 360f) - 180f);
+            if (diff <= cardinalHalf) {
+                return EnumSet.of(cardinals[i]);
+            }
         }
-        if (angle < threeSectors) {
+        if (deg < 90f) {
             return EnumSet.of(Direction.UP, Direction.RIGHT);
         }
-        if (angle < fiveSectors) {
-            return EnumSet.of(Direction.UP);
-        }
-        if (angle < sevenSectors) {
+        if (deg < 180f) {
             return EnumSet.of(Direction.UP, Direction.LEFT);
         }
-        if (angle < nineSectors) {
-            return EnumSet.of(Direction.LEFT);
-        }
-        if (angle < elevenSectors) {
+        if (deg < 270f) {
             return EnumSet.of(Direction.DOWN, Direction.LEFT);
-        }
-        if (angle < thirteenSectors) {
-            return EnumSet.of(Direction.DOWN);
         }
         return EnumSet.of(Direction.DOWN, Direction.RIGHT);
     }

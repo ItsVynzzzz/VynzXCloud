@@ -17,6 +17,7 @@ import com.xstreaming.R;
 
 public class AnalogStickView extends CustomView {
 
+    private static final float DEAD_ZONE = 0.10f;
     private float radius = 100f;
     private float handleRadius = 30f;
     private Drawable drawableBase;
@@ -228,10 +229,17 @@ public class AnalogStickView extends CustomView {
 
         Vector dir = position.minus(center);
         float length = dir.getLength();
+        if (length > radius) {
+            // Pusat analog ikut bergeser ke arah jari, jadi jempol tidak perlu kembali jauh
+            center = center.plus(dir.divide(length).times(length - radius));
+            dir = position.minus(center);
+            length = dir.getLength();
+        }
         if (length > 0) {
-            float strength = length > radius ? 1.0f : length / radius;
+            float rawStrength = length > radius ? 1.0f : length / radius;
+            float strength = rawStrength <= DEAD_ZONE ? 0f : (rawStrength - DEAD_ZONE) / (1f - DEAD_ZONE);
             Vector dirNormalized = dir.divide(length);
-            handlePosition = dirNormalized.times(strength);
+            handlePosition = dirNormalized.times(rawStrength);
             Vector dirBoxNormalized;
 
             if (Math.abs(dirNormalized.x) > Math.abs(dirNormalized.y)) {

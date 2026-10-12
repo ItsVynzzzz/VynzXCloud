@@ -121,8 +121,8 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={80}
-                  handleRadius={50}
+                  radius={90}
+                  handleRadius={48}
                   homeX={Math.min(
                     Math.max((button.x + 60) / (clientW * 0.5), 0.05),
                     0.95,
@@ -171,8 +171,8 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={80}
-                  handleRadius={50}
+                  radius={90}
+                  handleRadius={48}
                   homeX={Math.min(
                     Math.max(
                       (button.x + 60 - clientW * 0.5) / (clientW * 0.5),

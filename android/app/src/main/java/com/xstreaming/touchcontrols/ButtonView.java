@@ -3,6 +3,7 @@ package com.xstreaming.touchcontrols;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -198,25 +199,132 @@ public class ButtonView extends CustomView {
         return dx * dx + dy * dy;
     }
 
+    private int trackedPointerId = -1;
+    private ButtonView heldView = null;
+    private final List<ButtonView> glideViews = new ArrayList<>();
+    private final List<RectF> glideRects = new ArrayList<>();
+
+    private void collectGlideTargets() {
+        glideViews.clear();
+        glideRects.clear();
+        if (!(getParent() instanceof ViewGroup)) {
+            return;
+        }
+        ViewGroup parent = (ViewGroup) getParent();
+        float slop = 6f * getResources().getDisplayMetrics().density;
+        int[] loc = new int[2];
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            if (child instanceof ButtonView && child.getVisibility() == View.VISIBLE) {
+                child.getLocationOnScreen(loc);
+                glideViews.add((ButtonView) child);
+                glideRects.add(new RectF(loc[0] - slop, loc[1] - slop,
+                        loc[0] + child.getWidth() + slop, loc[1] + child.getHeight() + slop));
+            }
+        }
+    }
+
+    private ButtonView glideTargetAt(float sx, float sy) {
+        ButtonView best = null;
+        float bestDist = Float.MAX_VALUE;
+        for (int i = 0; i < glideViews.size(); i++) {
+            RectF r = glideRects.get(i);
+            if (r.contains(sx, sy)) {
+                float dx = sx - r.centerX();
+                float dy = sy - r.centerY();
+                float d = dx * dx + dy * dy;
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = glideViews.get(i);
+                }
+            }
+        }
+        return best;
+    }
+
+    private void handleGlide(float sx, float sy) {
+        ButtonView target = glideTargetAt(sx, sy);
+        if (target == null) {
+            // Jari keluar dari semua tombol: tombol baru dilepas setelah menjauh 20dp (histeresis)
+            if (heldView != null) {
+                float hyst = 20f * getResources().getDisplayMetrics().density;
+                int index = glideViews.indexOf(heldView);
+                boolean keep = false;
+                if (index >= 0) {
+                    RectF r = glideRects.get(index);
+                    keep = new RectF(r.left - hyst, r.top - hyst, r.right + hyst, r.bottom + hyst).contains(sx, sy);
+                }
+                if (!keep) {
+                    heldView.setButtonPressed(false);
+                    heldView = null;
+                }
+            }
+            return;
+        }
+        if (target != heldView) {
+            if (heldView != null) {
+                heldView.setButtonPressed(false);
+            }
+            heldView = target;
+            heldView.setButtonPressed(true);
+        }
+    }
+
+    private void releaseGlide() {
+        if (heldView != null) {
+            heldView.setButtonPressed(false);
+        }
+        setButtonPressed(false);
+        heldView = null;
+        trackedPointerId = -1;
+        glideViews.clear();
+        glideRects.clear();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch(event.getActionMasked()) {
+        int action = event.getActionMasked();
+        switch (action) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN: {
+                if (trackedPointerId != -1) {
+                    return true; // jari kedua pada tombol yang sama diabaikan
+                }
                 View bestView = bestFittingTouchView(
                         event.getX(event.getActionIndex()),
                         event.getY(event.getActionIndex()));
-                if(bestView != this) {
+                if (bestView != this) {
                     return false;
                 }
+                trackedPointerId = event.getPointerId(event.getActionIndex());
+                collectGlideTargets();
+                heldView = this;
                 setButtonPressed(true);
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: {
+                if (trackedPointerId == -1) {
+                    break;
+                }
+                int index = event.findPointerIndex(trackedPointerId);
+                if (index < 0) {
+                    break;
+                }
+                int[] loc = new int[2];
+                getLocationOnScreen(loc);
+                handleGlide(loc[0] + event.getX(index), loc[1] + event.getY(index));
                 break;
             }
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_CANCEL:
-                setButtonPressed(false);
+            case MotionEvent.ACTION_CANCEL: {
+                boolean mine = action != MotionEvent.ACTION_POINTER_UP
+                        || event.getPointerId(event.getActionIndex()) == trackedPointerId;
+                if (mine) {
+                    releaseGlide();
+                }
                 break;
+            }
         }
         return true;
     }

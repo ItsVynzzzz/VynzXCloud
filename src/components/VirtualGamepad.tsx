@@ -173,8 +173,8 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={80}
-            handleRadius={50}
+            radius={90}
+            handleRadius={48}
             homeX={0.6}
             homeY={0.77}
             onStickChange={(data: any) => handleStickMove('left', data)}
@@ -199,8 +199,8 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={80}
-            handleRadius={50}
+            radius={90}
+            handleRadius={48}
             homeX={0.36}
             homeY={0.775}
             onStickChange={(data: any) => handleStickMove('right', data)}
