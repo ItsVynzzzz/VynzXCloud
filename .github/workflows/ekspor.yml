@@ -1,0 +1,16 @@
+name: Ekspor kode
+on: workflow_dispatch
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kode
+          path: |
+            src
+            android/app/src/main
+            package.json
+            patches
+            !**/*.so
