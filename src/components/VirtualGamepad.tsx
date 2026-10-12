@@ -102,9 +102,6 @@ const VirtualGamepad: React.FC<Props> = ({
         style={[
           styles.button,
           styles.l3,
-          settings.virtual_gamepad_joystick === 1
-            ? {bottom: 30, left: 225}
-            : {},
           {opacity},
         ]}
         buttonName="control_button_left_joystick_down"
@@ -116,9 +113,6 @@ const VirtualGamepad: React.FC<Props> = ({
         style={[
           styles.button,
           styles.r3,
-          settings.virtual_gamepad_joystick === 1
-            ? {bottom: 30, right: 225}
-            : {},
           {opacity},
         ]}
         buttonName="control_button_right_joystick_down"
@@ -127,21 +121,21 @@ const VirtualGamepad: React.FC<Props> = ({
       />
 
       <ButtonView
-        style={[styles.button, styles.view, {left: viewLeft, opacity}]}
+        style={[styles.button, styles.view, {opacity}]}
         buttonName="control_button_view"
         onPressIn={() => handlePressIn('View')}
         onPressOut={() => handlePressOut('View')}
       />
 
       <ButtonView
-        style={[styles.button, styles.nexus, {left: nexusLeft, opacity}]}
+        style={[styles.button, styles.nexus, {opacity}]}
         buttonName="control_button_xbox"
         onPressIn={() => handlePressIn('Nexus')}
         onPressOut={() => handlePressOut('Nexus')}
       />
 
       <ButtonView
-        style={[styles.button, styles.menu, {left: menuLeft, opacity}]}
+        style={[styles.button, styles.menu, {opacity}]}
         buttonName="control_button_menu"
         onPressIn={() => handlePressIn('Menu')}
         onPressOut={() => handlePressOut('Menu')}
@@ -170,6 +164,7 @@ const VirtualGamepad: React.FC<Props> = ({
             left: 0,
             top: 0,
             zIndex: 9,
+            opacity,
             width: width * 0.5,
             height: height,
           }}>
@@ -178,8 +173,10 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={140}
-            handleRadius={80}
+            radius={80}
+            handleRadius={50}
+            homeX={0.6}
+            homeY={0.77}
             onStickChange={(data: any) => handleStickMove('left', data)}
           />
         </View>
@@ -193,6 +190,7 @@ const VirtualGamepad: React.FC<Props> = ({
             right: 0,
             top: 0,
             zIndex: 9,
+            opacity,
             width: width * 0.5,
             height: height,
           }}>
@@ -201,8 +199,10 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={150}
-            handleRadius={100}
+            radius={80}
+            handleRadius={50}
+            homeX={0.36}
+            homeY={0.775}
             onStickChange={(data: any) => handleStickMove('right', data)}
           />
         </View>
@@ -251,81 +251,93 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   lt: {
-    width: 64,
-    height: 64,
-    left: 28,
+    width: 80,
+    height: 50,
+    left: '9.2%',
     top: 8,
   },
   rt: {
-    width: 64,
-    height: 64,
-    right: 28,
-    top: 8,
+    width: 80,
+    height: 50,
+    right: '9.4%',
+    top: 9,
   },
   lb: {
-    width: 64,
-    height: 64,
-    left: 98,
-    top: 8,
+    width: 80,
+    height: 50,
+    left: '21%',
+    top: 15,
   },
   rb: {
-    width: 64,
-    height: 64,
-    right: 98,
-    top: 8,
+    width: 80,
+    height: 50,
+    right: '21.1%',
+    top: 23,
   },
   a: {
-    width: 60,
-    height: 60,
-    bottom: 25,
-    right: 70,
+    width: 54,
+    height: 54,
+    right: 112,
+    bottom: 120,
   },
   b: {
-    width: 60,
-    height: 60,
-    bottom: 70,
-    right: 25,
+    width: 54,
+    height: 54,
+    right: 64,
+    bottom: 168,
   },
   x: {
-    width: 60,
-    height: 60,
-    bottom: 70,
-    right: 110,
+    width: 54,
+    height: 54,
+    right: 160,
+    bottom: 168,
   },
   y: {
-    width: 60,
-    height: 60,
-    bottom: 115,
-    right: 70,
+    width: 54,
+    height: 54,
+    right: 112,
+    bottom: 216,
   },
   l3: {
-    bottom: 80,
-    left: 225,
+    left: '28.9%',
+    top: 69,
   },
   r3: {
-    bottom: 40,
-    right: 235,
+    right: '27.7%',
+    top: 69,
   },
   view: {
-    bottom: 5,
+    width: 40,
+    height: 40,
+    left: '50%',
+    marginLeft: -42,
+    bottom: 28,
   },
   nexus: {
-    bottom: 5,
+    width: 44,
+    height: 44,
+    left: '50%',
+    marginLeft: -22,
+    bottom: 70,
   },
   menu: {
-    bottom: 5,
+    width: 40,
+    height: 40,
+    left: '50%',
+    marginLeft: 2,
+    bottom: 28,
   },
   leftJs: {
-    left: 180,
-    bottom: 150,
+    left: '22.6%',
+    bottom: 23,
     width: 120,
     height: 120,
     borderRadius: 60,
     overflow: 'hidden',
   },
   rightJs: {
-    right: 200,
-    bottom: 100,
+    right: '24.7%',
+    bottom: 20,
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -333,10 +345,10 @@ const styles = StyleSheet.create({
   },
   dpad: {
     position: 'absolute',
-    width: 160,
-    height: 160,
-    left: 15,
-    bottom: 15,
+    width: 140,
+    height: 140,
+    left: '9%',
+    top: '28.7%',
     zIndex: 10,
   },
   macro: {
@@ -344,13 +356,13 @@ const styles = StyleSheet.create({
     height: 60,
     left: '50%',
     marginLeft: -30,
-    bottom: 90,
+    bottom: 120,
   },
   analogStick: {
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, .5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
 });

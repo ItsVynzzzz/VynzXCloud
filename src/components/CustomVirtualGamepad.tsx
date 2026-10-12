@@ -10,6 +10,7 @@ import {
   ensureMacroLayoutButton,
   VIRTUAL_MACRO_BUTTON_NAME,
 } from '../utils/virtualMacro';
+import {defaultLayoutButtons} from '../utils/defaultLayout';
 import {
   createDefaultVirtualDPadButton,
   ensureVirtualDPadLayoutButton,
@@ -47,113 +48,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
     const dpadDefaultButton = createDefaultVirtualDPadButton(15, height - 175, 160, 160);
 
     const macroDefaultButton = createDefaultMacroLayoutButton(width, height);
-    const _buttons = [
-      {
-        name: 'LeftTrigger',
-        x: 30,
-        y: 40,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightTrigger',
-        x: width - 30,
-        y: 40,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'LeftShoulder',
-        x: 30,
-        y: 100,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightShoulder',
-        x: width - 30,
-        y: 110,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'A',
-        x: width - 90,
-        y: height - 60,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'B',
-        x: width - 40,
-        y: height - 110,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'X',
-        x: width - 140,
-        y: height - 110,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Y',
-        x: width - 90,
-        y: height - 160,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'LeftThumb',
-        x: 210,
-        y: height - 80,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightThumb',
-        x: width - 235,
-        y: height - 70,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'View',
-        x: viewLeft,
-        y: height - 30,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Nexus',
-        x: nexusLeft,
-        y: height - 50,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Menu',
-        x: menuLeft,
-        y: height - 30,
-        scale: 1,
-        show: true,
-      },
-      dpadDefaultButton,
-      {
-        name: 'LeftStick',
-        x: 175,
-        y: height - 205,
-        show: true,
-      },
-      {
-        name: 'RightStick',
-        x: width - 265,
-        y: height - 195,
-        show: true,
-      },
-      macroDefaultButton,
-    ];
+    const _buttons = defaultLayoutButtons(width, height, macroDefaultButton);
     if (_settings[title]) {
       const exitButtons = _settings[title];
       setButtons(
@@ -217,6 +112,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   left: 0,
                   top: 0,
                   zIndex: 9,
+                  opacity,
                   width: clientW * 0.5,
                   height: clientH,
                 }}>
@@ -225,8 +121,13 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={140}
-                  handleRadius={80}
+                  radius={80}
+                  handleRadius={50}
+                  homeX={Math.min(
+                    Math.max((button.x + 60) / (clientW * 0.5), 0.05),
+                    0.95,
+                  )}
+                  homeY={Math.min(Math.max((button.y + 60) / clientH, 0.05), 0.95)}
                   onStickChange={(data: any) => handleStickMove('left', data)}
                 />
               </View>
@@ -261,6 +162,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   right: 0,
                   top: 0,
                   zIndex: 9,
+                  opacity,
                   width: clientW * 0.5,
                   height: clientH,
                 }}>
@@ -269,8 +171,16 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={150}
-                  handleRadius={100}
+                  radius={80}
+                  handleRadius={50}
+                  homeX={Math.min(
+                    Math.max(
+                      (button.x + 60 - clientW * 0.5) / (clientW * 0.5),
+                      0.05,
+                    ),
+                    0.95,
+                  )}
+                  homeY={Math.min(Math.max((button.y + 60) / clientH, 0.05), 0.95)}
                   onStickChange={(data: any) => handleStickMove('right', data)}
                 />
               </View>

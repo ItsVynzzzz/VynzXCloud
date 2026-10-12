@@ -58,6 +58,22 @@ const GamepadButton: React.FC<Props> = ({
     width = 60;
     height = 60;
   }
+  if (
+    ['LeftTrigger', 'RightTrigger', 'LeftShoulder', 'RightShoulder'].indexOf(
+      name,
+    ) > -1
+  ) {
+    width = 80;
+    height = 50;
+  }
+  if (name === 'View' || name === 'Menu') {
+    width = 40;
+    height = 40;
+  }
+  if (name === 'Nexus') {
+    width = 44;
+    height = 44;
+  }
 
   const mappedButtonName = mapping[name];
   if (!mappedButtonName) {

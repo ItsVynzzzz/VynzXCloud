@@ -32,6 +32,12 @@ import {
   ensureMacroLayoutButton,
 } from '../utils/virtualMacro';
 import {useGamepadNavigation} from '../utils/useGamepadNavigation';
+import DPadView from '../components/DPadView';
+import {
+  createDefaultVirtualDPadButton,
+  ensureVirtualDPadLayoutButton,
+} from '../utils/virtualDPad';
+import {defaultLayoutButtons} from '../utils/defaultLayout';
 
 const {FullScreenManager} = NativeModules;
 
@@ -87,139 +93,15 @@ function CustomGamepadScreen({navigation, route}) {
       const menuLeft = width * 0.5 + 60;
       const macroDefaultButton = createDefaultMacroLayoutButton(width, height);
 
-      const _buttons = [
-        {
-          name: 'LeftTrigger',
-          x: 30,
-          y: 40,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'RightTrigger',
-          x: width - 40,
-          y: 40,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'LeftShoulder',
-          x: 30,
-          y: 100,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'RightShoulder',
-          x: width - 40,
-          y: 100,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'A',
-          x: width - 90,
-          y: height - 60,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'B',
-          x: width - 40,
-          y: height - 110,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'X',
-          x: width - 140,
-          y: height - 110,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'Y',
-          x: width - 90,
-          y: height - 160,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'LeftThumb',
-          x: 225,
-          y: height - 80,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'RightThumb',
-          x: width - 235,
-          y: height - 70,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'View',
-          x: viewLeft,
-          y: height - 30,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'Nexus',
-          x: nexusLeft,
-          y: height - 30,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'Menu',
-          x: menuLeft,
-          y: height - 30,
-          scale: 1,
-          show: true,
-        },
-        {
-          name: 'DPadUp',
-          x: 85,
-          y: height - 155,
-          show: true,
-        },
-        {
-          name: 'DPadLeft',
-          x: 35,
-          y: height - 105,
-          show: true,
-        },
-        {
-          name: 'DPadDown',
-          x: 85,
-          y: height - 55,
-          show: true,
-        },
-        {
-          name: 'DPadRight',
-          x: 135,
-          y: height - 105,
-          show: true,
-        },
-        {
-          name: 'LeftStick',
-          x: 175,
-          y: height - 205,
-          show: true,
-        },
-        {
-          name: 'RightStick',
-          x: width - 265,
-          y: height - 195,
-          show: true,
-        },
-        macroDefaultButton,
-      ];
+      const _buttons = defaultLayoutButtons(width, height, macroDefaultButton);
       if (_settings[_title]) {
         const exitButtons = _settings[_title];
-        setButtons(ensureMacroLayoutButton(exitButtons, macroDefaultButton));
+        setButtons(
+          ensureVirtualDPadLayoutButton(
+            ensureMacroLayoutButton(exitButtons, macroDefaultButton),
+            createDefaultVirtualDPadButton(15, height - 175, 160, 160),
+          ),
+        );
       } else {
         setButtons(_buttons);
       }
@@ -242,37 +124,113 @@ function CustomGamepadScreen({navigation, route}) {
     };
   }, [navigation, route.params?.name]);
 
-  // Button drag
+  const ABXY = ['A', 'B', 'X', 'Y'];
+  const isAbxy = name => name === 'ABXY';
+
+  // Button drag (ABXY digeser sebagai satu kelompok)
   const handleDrag = (name, x, y) => {
-    buttons.forEach(b => {
-      if (b.name === name) {
-        b.x = Math.round(x);
-        b.y = Math.round(y);
-      }
-    });
+    if (isAbxy(name)) {
+      const group = buttons.filter(b => ABXY.includes(b.name));
+      const dx = Math.round(x) - Math.min(...group.map(b => b.x));
+      const dy = Math.round(y) - Math.min(...group.map(b => b.y));
+      group.forEach(b => {
+        b.x += dx;
+        b.y += dy;
+      });
+    } else {
+      buttons.forEach(b => {
+        if (b.name === name) {
+          b.x = Math.round(x);
+          b.y = Math.round(y);
+        }
+      });
+    }
     setButtons([...buttons]);
   };
 
   // Button size change
   const handleChangeSize = scale => {
-    buttons.forEach(b => {
-      if (b.name === currentButton) {
+    if (isAbxy(currentButton)) {
+      const group = buttons.filter(b => ABXY.includes(b.name));
+      const oldScale = group[0].scale || 1;
+      const cx =
+        group.reduce((sum, b) => sum + b.x + 30 * (b.scale || 1), 0) /
+        group.length;
+      const cy =
+        group.reduce((sum, b) => sum + b.y + 30 * (b.scale || 1), 0) /
+        group.length;
+      group.forEach(b => {
+        const bs = b.scale || 1;
+        const nx = cx + (b.x + 30 * bs - cx) * (scale / oldScale);
+        const ny = cy + (b.y + 30 * bs - cy) * (scale / oldScale);
         b.scale = scale;
-      }
-    });
+        b.x = Math.round(nx - 30 * scale);
+        b.y = Math.round(ny - 30 * scale);
+      });
+    } else {
+      buttons.forEach(b => {
+        if (b.name === currentButton) {
+          b.scale = scale;
+        }
+      });
+    }
     setButtons([...buttons]);
   };
 
   // Button show change
   const handleChangeShow = value => {
-    console.log('handleChangeShow:', value);
     setCurrentShow(value);
     buttons.forEach(b => {
-      if (b.name === currentButton) {
+      if (
+        b.name === currentButton ||
+        (isAbxy(currentButton) && ABXY.includes(b.name))
+      ) {
         b.show = value;
       }
     });
     setButtons([...buttons]);
+  };
+
+  const renderAbxyGroup = () => {
+    const group = buttons.filter(b => ABXY.includes(b.name));
+    if (group.length < 4 || !group[0].show) {
+      return null;
+    }
+    const minX = Math.min(...group.map(b => b.x));
+    const minY = Math.min(...group.map(b => b.y));
+    const maxX = Math.max(...group.map(b => b.x + 60 * (b.scale || 1)));
+    const maxY = Math.max(...group.map(b => b.y + 60 * (b.scale || 1)));
+    return (
+      <Draggable
+        x={minX}
+        y={minY}
+        key={'ABXY' + reloader}
+        onShortPressRelease={() => {
+          setCurrentButton('ABXY');
+          setCurrentScale(group[0].scale || 1);
+          setCurrentShow(true);
+          setShowModal(true);
+        }}
+        onDragRelease={(_, __, bounds) => {
+          handleDrag('ABXY', bounds.left, bounds.top);
+          setReloader(Date.now());
+        }}>
+        <View style={{width: maxX - minX, height: maxY - minY}}>
+          {group.map(b => (
+            <View
+              key={b.name}
+              style={{position: 'absolute', left: b.x - minX, top: b.y - minY}}>
+              <GamepadButton
+                name={b.name}
+                width={60}
+                height={60}
+                scale={b.scale}
+              />
+            </View>
+          ))}
+        </View>
+      </Draggable>
+    );
   };
 
   const background = {
@@ -295,136 +253,7 @@ function CustomGamepadScreen({navigation, route}) {
     const menuLeft = width * 0.5 + 60;
     const macroDefaultButton = createDefaultMacroLayoutButton(width, height);
 
-    const _buttons = [
-      {
-        name: 'LeftTrigger',
-        x: 30,
-        y: 40,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightTrigger',
-        x: width - 40,
-        y: 40,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'LeftShoulder',
-        x: 30,
-        y: 100,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightShoulder',
-        x: width - 40,
-        y: 100,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'A',
-        x: width - 90,
-        y: height - 60,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'B',
-        x: width - 40,
-        y: height - 110,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'X',
-        x: width - 140,
-        y: height - 110,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Y',
-        x: width - 90,
-        y: height - 160,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'LeftThumb',
-        x: 225,
-        y: height - 80,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'RightThumb',
-        x: width - 235,
-        y: height - 80,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'View',
-        x: viewLeft,
-        y: height - 30,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Nexus',
-        x: nexusLeft,
-        y: height - 30,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'Menu',
-        x: menuLeft,
-        y: height - 30,
-        scale: 1,
-        show: true,
-      },
-      {
-        name: 'DPadUp',
-        x: 85,
-        y: height - 155,
-        show: true,
-      },
-      {
-        name: 'DPadLeft',
-        x: 35,
-        y: height - 105,
-        show: true,
-      },
-      {
-        name: 'DPadDown',
-        x: 85,
-        y: height - 55,
-        show: true,
-      },
-      {
-        name: 'DPadRight',
-        x: 135,
-        y: height - 105,
-        show: true,
-      },
-      {
-        name: 'LeftStick',
-        x: 175,
-        y: height - 205,
-        show: true,
-      },
-      {
-        name: 'RightStick',
-        x: width - 265,
-        y: height - 195,
-        show: true,
-      },
-      macroDefaultButton,
-    ];
+    const _buttons = defaultLayoutButtons(width, height, macroDefaultButton);
     setButtons([..._buttons]);
   };
 
@@ -558,6 +387,34 @@ function CustomGamepadScreen({navigation, route}) {
 
       <>
         {buttons.map(button => {
+          if (ABXY.includes(button.name)) {
+            return null;
+          }
+          if (button.name === 'DPad') {
+            if (!button.show) {
+              return null;
+            }
+            const dw = (button.width ?? 160) * (button.scale ?? 1);
+            const dh = (button.height ?? 160) * (button.scale ?? 1);
+            return (
+              <Draggable
+                x={button.x}
+                y={button.y}
+                key={button.name + reloader}
+                onShortPressRelease={() => {
+                  setCurrentButton(button.name);
+                  setCurrentScale(button.scale || 1);
+                  setCurrentShow(button.show || true);
+                  setShowModal(true);
+                }}
+                onDragRelease={(_, __, bounds) => {
+                  handleDrag(button.name, bounds.left, bounds.top);
+                  setReloader(Date.now());
+                }}>
+                <DPadView style={{width: dw, height: dh}} pointerEvents="none" />
+              </Draggable>
+            );
+          }
           if (button.name === 'LeftStick' || button.name === 'RightStick') {
             if (!button.show) {
               return null;
@@ -567,7 +424,7 @@ function CustomGamepadScreen({navigation, route}) {
                 x={button.x}
                 y={button.y}
                 key={button.name + reloader}
-                renderSize={100}
+                renderSize={120}
                 renderColor="white"
                 isCircle
                 onShortPressRelease={() => {
@@ -611,6 +468,7 @@ function CustomGamepadScreen({navigation, route}) {
             );
           }
         })}
+        {renderAbxyGroup()}
       </>
     </SafeAreaView>
   );

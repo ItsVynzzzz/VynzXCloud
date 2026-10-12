@@ -27,6 +27,8 @@ public class AnalogStickView extends CustomView {
 
     private TouchTracker touchTracker;
     private Vector center;
+    private float homeFx = -1f;
+    private float homeFy = -1f;
     private Vector handlePosition = new Vector(0f, 0f);
 
     public interface StateChangedCallback {
@@ -113,6 +115,23 @@ public class AnalogStickView extends CustomView {
         invalidate();
     }
 
+    public void setHomeX(float fx) {
+        this.homeFx = fx;
+        invalidate();
+    }
+
+    public void setHomeY(float fy) {
+        this.homeFy = fy;
+        invalidate();
+    }
+
+    private Vector getHome() {
+        if (homeFx < 0f || homeFy < 0f || getWidth() == 0 || getHeight() == 0) {
+            return null;
+        }
+        return new Vector(getWidth() * homeFx, getHeight() * homeFy);
+    }
+
     public float getRadius() {
         return radius;
     }
@@ -156,21 +175,22 @@ public class AnalogStickView extends CustomView {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (center != null) {
+        Vector c = (center != null) ? center : getHome();
+        if (c != null) {
             float circleRadius = radius + handleRadius;
 
             if (drawableBase != null) {
                 drawableBase.setBounds(
-                        (int) (center.x - circleRadius),
-                        (int) (center.y - circleRadius),
-                        (int) (center.x + circleRadius),
-                        (int) (center.y + circleRadius)
+                        (int) (c.x - circleRadius),
+                        (int) (c.y - circleRadius),
+                        (int) (c.x + circleRadius),
+                        (int) (c.y + circleRadius)
                 );
                 drawableBase.draw(canvas);
             }
 
-            float handleX = center.x + handlePosition.x * radius;
-            float handleY = center.y + handlePosition.y * radius;
+            float handleX = c.x + handlePosition.x * radius;
+            float handleY = c.y + handlePosition.y * radius;
 
             if (drawableHandle != null) {
                 drawableHandle.setBounds(
@@ -198,7 +218,12 @@ public class AnalogStickView extends CustomView {
         }
 
         if (center == null) {
-            center = position;
+            Vector home = getHome();
+            if (home != null && position.minus(home).getLength() <= radius + handleRadius) {
+                center = home;
+            } else {
+                center = position;
+            }
         }
 
         Vector dir = position.minus(center);

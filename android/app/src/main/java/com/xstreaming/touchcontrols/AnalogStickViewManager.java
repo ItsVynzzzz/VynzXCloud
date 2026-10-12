@@ -32,6 +32,16 @@ public class AnalogStickViewManager extends SimpleViewManager<AnalogStickView> {
         view.setRadius(radius);
     }
 
+    @ReactProp(name = "homeX", defaultFloat = -1f)
+    public void setHomeX(AnalogStickView view, float homeX) {
+        view.setHomeX(homeX);
+    }
+
+    @ReactProp(name = "homeY", defaultFloat = -1f)
+    public void setHomeY(AnalogStickView view, float homeY) {
+        view.setHomeY(homeY);
+    }
+
     @ReactProp(name = "handleRadius")
     public void setHandleRadius(AnalogStickView view, float handleRadius) {
         view.setHandleRadius(handleRadius);
