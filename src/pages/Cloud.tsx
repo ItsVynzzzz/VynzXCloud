@@ -773,7 +773,7 @@ const CarouselSection = React.memo<CarouselSectionProps>(
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={({ pressed, focused }: any) => [
                 styles.showAllHeaderButton,
-                { backgroundColor: primary + '1A' },
+                { backgroundColor: 'transparent' },
                 focused && styles.showAllHeaderButtonFocused,
                 pressed && [
                   styles.showAllHeaderButtonPressed,
@@ -4072,7 +4072,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   carouselSection: {
-    marginBottom: 22,
+    marginBottom: 28,
   },
   carouselSectionLandscape: {
     marginBottom: 14,
@@ -4081,7 +4081,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
     gap: 8,
   },
   sectionHeaderRowLandscape: {
@@ -4093,7 +4093,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sectionSubtitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '400',
     color: '#8b949e',
     marginTop: 2,
@@ -4118,9 +4118,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     transform: [{ scale: 1 }],
     paddingVertical: 3,
-    paddingHorizontal: 7,
+    paddingHorizontal: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(46, 213, 115, 0.1)',
+    backgroundColor: 'transparent',
     flexShrink: 0,
     overflow: 'hidden',
   },
@@ -4130,7 +4130,7 @@ const styles = StyleSheet.create({
   },
   showAllHeaderText: {
     color: '#2ed573',
-    fontSize: 11,
+    fontSize: 12.5,
     fontWeight: '600',
     marginRight: 2,
   },

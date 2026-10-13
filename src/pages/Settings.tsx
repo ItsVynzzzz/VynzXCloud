@@ -7,11 +7,15 @@ import {
   NativeModules,
   ToastAndroid,
   Platform,
+  Image,
+  TextInput,
+  Pressable,
 } from 'react-native';
-import {Text, useTheme} from 'react-native-paper';
+import {Icon, Text, useTheme} from 'react-native-paper';
+import {useIsFocused} from '@react-navigation/native';
 import Spinner from '../components/Spinner';
 import {getSettings, resetSettings} from '../store/settingStore';
-import SettingItem from '../components/SettingItem';
+import SettingRow from '../components/SettingRow';
 import {useSelector} from 'react-redux';
 import RNRestart from 'react-native-restart';
 import CookieManager from '@react-native-cookies/cookies';
@@ -43,20 +47,57 @@ const {UsbRumbleManager} = NativeModules;
 
 const log = debugFactory('SettingsScreen');
 
-function SettingsScreen({navigation}) {
+type Row = {
+  key: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  danger?: boolean;
+  onPress: () => void;
+};
+
+type Section = {
+  key: string;
+  title?: string;
+  rows: Row[];
+};
+
+type Category = {
+  id: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  sections: Section[];
+};
+
+const tierLabel = (raw: string) => {
+  if (raw === 'Core') {
+    return 'Essential';
+  }
+  if (raw === 'Standard') {
+    return 'Premium';
+  }
+  if (raw === 'FREE' || raw === 'Free') {
+    return 'Free';
+  }
+  return raw;
+};
+
+function SettingsScreen({navigation, route}: any) {
   const {t, i18n} = useTranslation();
   const theme = useTheme();
+  const isFocused = useIsFocused();
   const authentication = useSelector((state: any) => state.authentication);
+  const dark = theme.dark;
+
+  const categoryId: string | undefined = route?.params?.category;
 
   const [isGamepadActive, setIsGamepadActive] = useGamepadActiveState();
   const [focusedIndex, setFocusedIndex] = React.useState(0);
+  const [query, setQuery] = React.useState('');
   const scrollViewRef = React.useRef<ScrollView>(null);
 
   const currentLanguage = i18n.language;
-  const titleTextStyle = React.useMemo(
-    () => [styles.titleText, {color: theme.colors.primary}],
-    [theme.colors.primary],
-  );
 
   const [loading, setLoading] = React.useState(false);
 
@@ -79,6 +120,10 @@ function SettingsScreen({navigation}) {
   if (userToken && userToken.data && userToken.data.access_token) {
     isAuthed = true;
   }
+
+  const gamertag = storage.getString('user.gamertag') || user || '';
+  const gamerpic = storage.getString('user.gamerpic') || '';
+  const rawTier = storage.getString('user.account_tier') || '';
 
   const handleClearCache = () => {
     clearXcloudData();
@@ -148,125 +193,308 @@ function SettingsScreen({navigation}) {
     }
   };
 
-  const settingActions = React.useMemo(() => {
-    const list: (() => void)[] = [];
-    // bases
-    bases.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    // xcloud
-    xcloud.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    // display
-    display.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    list.push(() => {
-      const settings = getSettings();
-      if (
-        settings.render_engine === 'native' ||
-        settings.render_engine === 'nano'
-      ) {
-        Alert.alert(
-          t('Display settings is not working in native render engine.'),
-        );
-        return;
-      }
-      navigation.navigate('Display');
-    });
-    // gamepad
-    gamepad.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    list.push(() => {
-      navigation.navigate('GamepadTest');
-    });
-    // vgamepad
-    vgamepad.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    list.push(() => {
-      navigation.navigate('VirtualGamepadSettings');
-    });
-    list.push(() => {
-      navigation.navigate('HoldButtons');
-    });
-    list.push(() => {
-      navigation.navigate('VirtualMacroSettings');
-    });
-    // audio
-    audio.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    // xhome
-    xhome.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    // sensor
-    sensor.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    // dualsense
-    list.push(() =>
-      navigation.navigate({
-        name: 'Ds5',
-        params: {
-          type: 'left',
+  const fromMeta = (list: any[]): Row[] =>
+    list.map((meta, idx) => ({
+      key: meta.name || `meta_${idx}`,
+      title: meta.title,
+      description: meta.description,
+      onPress: () => handleItemPress(meta.name),
+    }));
+
+  const openDisplay = () => {
+    const settings = getSettings();
+    if (settings.render_engine === 'native' || settings.render_engine === 'nano') {
+      Alert.alert(t('Display settings is not working in native render engine.'));
+      return;
+    }
+    navigation.navigate('Display');
+  };
+
+  const isChinese = currentLanguage === 'zh' || currentLanguage === 'zht';
+
+  const categories: Category[] = [
+    {
+      id: 'general',
+      icon: 'tune-variant',
+      title: t('CatGeneral'),
+      subtitle: t('CatGeneralDesc'),
+      sections: [
+        {key: 'bases', title: t('BasesSettings'), rows: fromMeta(bases)},
+        {key: 'others', title: t('Others'), rows: fromMeta(others)},
+      ],
+    },
+    {
+      id: 'stream',
+      icon: 'monitor',
+      title: t('CatStream'),
+      subtitle: t('CatStreamDesc'),
+      sections: [
+        {
+          key: 'display',
+          title: t('DisplaySettings'),
+          rows: [
+            ...fromMeta(display),
+            {
+              key: 'display_custom',
+              title: t('Display'),
+              description: t('Set parameters such as screen clarity and saturation'),
+              onPress: openDisplay,
+            },
+          ],
         },
-      }),
-    );
-    list.push(() =>
-      navigation.navigate({
-        name: 'Ds5',
-        params: {
-          type: 'right',
+        {key: 'xcloud', title: t('XcloudSettings'), rows: fromMeta(xcloud)},
+      ],
+    },
+    {
+      id: 'audio',
+      icon: 'volume-high',
+      title: t('CatAudio'),
+      subtitle: t('CatAudioDesc'),
+      sections: [{key: 'audio', rows: fromMeta(audio)}],
+    },
+    {
+      id: 'input',
+      icon: 'gamepad-variant-outline',
+      title: t('CatInput'),
+      subtitle: t('CatInputDesc'),
+      sections: [
+        {
+          key: 'gamepad',
+          title: t('GamepadSettings'),
+          rows: [
+            ...fromMeta(gamepad),
+            {
+              key: 'gamepad_test',
+              title: t('GamepadTestTitle'),
+              description: t('GamepadTestDescription'),
+              onPress: () => navigation.navigate('GamepadTest'),
+            },
+          ],
         },
-      }),
-    );
-    // server
-    server.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
+        {
+          key: 'vgamepad',
+          title: t('vGamepadSettings'),
+          rows: [
+            ...fromMeta(vgamepad),
+            {
+              key: 'vgamepad_custom',
+              title: t('Customize virtual buttons'),
+              description: t('Customize buttons of virtual gamepad'),
+              onPress: () => navigation.navigate('VirtualGamepadSettings'),
+            },
+            {
+              key: 'vgamepad_hold',
+              title: t('Auto toggle hold buttons'),
+              description: t('Select what buttons become toggle holdable'),
+              onPress: () => navigation.navigate('HoldButtons'),
+            },
+            {
+              key: 'vgamepad_macro',
+              title: t('Virtual macro settings'),
+              description: t('Enable macro button and edit its action sequence'),
+              onPress: () => navigation.navigate('VirtualMacroSettings'),
+            },
+          ],
+        },
+        {key: 'sensor', title: t('SensorSettings'), rows: fromMeta(sensor)},
+        {
+          key: 'dualsense',
+          title: t('DualSense'),
+          rows: [
+            {
+              key: 'ds5_left',
+              title: t('DualSense_adaptive_trigger_left'),
+              description: `${t('DualSense_adaptive_trigger_left_desc')}`,
+              onPress: () =>
+                navigation.navigate({name: 'Ds5', params: {type: 'left'}}),
+            },
+            {
+              key: 'ds5_right',
+              title: t('DualSense_adaptive_trigger_right'),
+              description: `${t('DualSense_adaptive_trigger_right_desc')}`,
+              onPress: () =>
+                navigation.navigate({name: 'Ds5', params: {type: 'right'}}),
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'advanced',
+      icon: 'flask-outline',
+      title: t('CatAdvanced'),
+      subtitle: t('CatAdvancedDesc'),
+      sections: [
+        {key: 'xhome', title: t('XchomeSettings'), rows: fromMeta(xhome)},
+        {
+          key: 'server',
+          title: t('TurnServerSettings'),
+          rows: [
+            ...fromMeta(server),
+            {
+              key: 'turn_server',
+              title: t('TURN server'),
+              description: t('Custom TURN server'),
+              onPress: () => navigation.navigate('Server'),
+            },
+          ],
+        },
+        {
+          key: 'tools',
+          rows: [
+            {
+              key: 'clear_cache',
+              title: t('Clear Cache'),
+              description: t('Clear XStreaming Cache Data(Keep login data)'),
+              onPress: () => handleClearCache(),
+            },
+            {
+              key: 'transfer',
+              title: t('ConfigTransfer'),
+              description: t('ConfigTransferDescription'),
+              onPress: () => navigation.navigate('Transfer'),
+            },
+            {
+              key: 'device_infos',
+              title: t('Device testing'),
+              description: t('Testing current device and controller'),
+              onPress: () => navigation.navigate('DeviceInfos'),
+            },
+            ...(__DEV__
+              ? [
+                  {
+                    key: 'debug',
+                    title: 'DEBUG',
+                    description: 'Enter debug',
+                    onPress: () => handleItemPress('debug'),
+                  },
+                ]
+              : []),
+          ],
+        },
+      ],
+    },
+    {
+      id: 'about',
+      icon: 'information-outline',
+      title: t('About'),
+      subtitle: t('CatAboutDesc'),
+      sections: [
+        {
+          key: 'about',
+          rows: [
+            {
+              key: 'about',
+              title: t('About'),
+              description: `${t('About XStreaming')}`,
+              onPress: () => navigation.navigate(isChinese ? 'AboutZh' : 'About'),
+            },
+            ...(isChinese
+              ? [
+                  {
+                    key: 'feedback',
+                    title: '支持及交流',
+                    description: '支持开发或交流使用心得',
+                    onPress: () => navigation.navigate('Feedback'),
+                  },
+                ]
+              : []),
+            {
+              key: 'history',
+              title: t('HistoryTitle'),
+              description: `${t('HistoryDesc')}`,
+              onPress: () => navigation.navigate('History'),
+            },
+            {
+              key: 'thanks',
+              title: t('Thanks'),
+              onPress: () => navigation.navigate('Thanks'),
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const activeCategory = categories.find(c => c.id === categoryId);
+  const trimmedQuery = query.trim().toLowerCase();
+
+  // Hasil pencarian lintas kategori
+  const searchRows: Row[] = React.useMemo(() => {
+    if (!trimmedQuery) {
+      return [];
+    }
+    const result: Row[] = [];
+    categories.forEach(cat => {
+      cat.sections.forEach(section => {
+        section.rows.forEach(row => {
+          const haystack = `${row.title} ${row.description || ''}`.toLowerCase();
+          if (haystack.includes(trimmedQuery)) {
+            result.push({
+              ...row,
+              key: `${cat.id}_${section.key}_${row.key}`,
+              description: row.description
+                ? `${cat.title} · ${row.description}`
+                : cat.title,
+            });
+          }
+        });
+      });
     });
-    list.push(() => navigation.navigate('Server'));
-    // others
-    others.forEach(meta => {
-      list.push(() => handleItemPress(meta.name));
-    });
-    list.push(() => handleClearCache());
-    list.push(() => navigation.navigate('Transfer'));
-    list.push(() => navigation.navigate('DeviceInfos'));
-    list.push(() => {
-      if (currentLanguage === 'zh' || currentLanguage === 'zht') {
-        navigation.navigate('AboutZh');
-      } else {
-        navigation.navigate('About');
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimmedQuery, currentLanguage, navigation]);
+
+  const logoutRow: Row | null = isAuthed
+    ? {
+        key: 'logout',
+        title: t('Logout'),
+        description: gamertag ? `${t('Current user')}: ${gamertag}` : undefined,
+        icon: 'logout',
+        danger: true,
+        onPress: () => handleItemPress('logout'),
       }
-    });
-    if (currentLanguage === 'zh' || currentLanguage === 'zht') {
-      list.push(() => navigation.navigate('Feedback'));
+    : null;
+
+  const categoryRows: Row[] = categories.map(cat => ({
+    key: cat.id,
+    title: cat.title,
+    description: cat.subtitle,
+    icon: cat.icon,
+    onPress: () => navigation.push('Settings', {category: cat.id}),
+  }));
+
+  // Daftar baris yang bisa difokuskan (untuk gamepad/TV), urutannya sama dengan tampilan
+  let flatRows: Row[] = [];
+  if (activeCategory) {
+    flatRows = activeCategory.sections.flatMap(s => s.rows);
+  } else if (trimmedQuery) {
+    flatRows = searchRows;
+  } else {
+    flatRows = logoutRow ? [...categoryRows, logoutRow] : categoryRows;
+  }
+
+  React.useEffect(() => {
+    if (activeCategory) {
+      navigation.setOptions({title: activeCategory.title});
     }
-    if (__DEV__) {
-      list.push(() => handleItemPress('debug'));
-    }
-    list.push(() => navigation.navigate('History'));
-    list.push(() => navigation.navigate('Thanks'));
-    if (isAuthed) {
-      list.push(() => handleItemPress('logout'));
-    }
-    return list;
-  }, [navigation, currentLanguage, isAuthed, t]);
+  }, [navigation, activeCategory?.title]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    setFocusedIndex(0);
+  }, [trimmedQuery, categoryId]);
 
   useGamepadNavigation({
+    enabled: isFocused,
     onUp: () => {
       setFocusedIndex(prev => Math.max(0, prev - 1));
     },
     onDown: () => {
-      setFocusedIndex(prev => Math.min(settingActions.length - 1, prev + 1));
+      setFocusedIndex(prev => Math.min(flatRows.length - 1, prev + 1));
     },
     onSelect: () => {
-      if (settingActions[focusedIndex]) {
-        settingActions[focusedIndex]();
+      if (flatRows[focusedIndex]) {
+        flatRows[focusedIndex].onPress();
       }
     },
     onBack: () => {
@@ -274,14 +502,18 @@ function SettingsScreen({navigation}) {
     },
   });
 
-  const itemLayouts = React.useRef<Record<number, {y: number; height: number}>>({});
+  const itemLayouts = React.useRef<
+    Record<number, {y: number; height: number; card: string}>
+  >({});
+  const cardOffsets = React.useRef<Record<string, number>>({});
   const scrollViewHeight = React.useRef<number>(0);
 
   const scrollToFocused = React.useCallback((index: number) => {
     const layout = itemLayouts.current[index];
     if (layout && scrollViewRef.current) {
       const viewH = scrollViewHeight.current || 600;
-      const targetY = Math.max(0, layout.y - (viewH - layout.height) / 2);
+      const absoluteY = (cardOffsets.current[layout.card] || 0) + layout.y;
+      const targetY = Math.max(0, absoluteY - (viewH - layout.height) / 2);
       scrollViewRef.current.scrollTo({y: targetY, animated: true});
     }
   }, []);
@@ -296,33 +528,167 @@ function SettingsScreen({navigation}) {
     log.info('settings page show');
   }, [navigation]);
 
-  let itemIndexCounter = 0;
-  const renderItem = (
-    title: string,
-    description: string | undefined,
-    onPress: () => void,
-    key?: any,
-  ) => {
-    const index = itemIndexCounter++;
-    const isFocused =
-      (isGamepadActive || Platform.isTV) && focusedIndex === index;
-    return (
-      <View
-        key={key ?? index}
-        onLayout={e => {
-          const l = e.nativeEvent.layout;
-          itemLayouts.current[index] = {y: l.y, height: l.height};
-          if (focusedIndex === index && (isGamepadActive || Platform.isTV)) {
-            scrollToFocused(index);
-          }
-        }}>
-        <SettingItem
-          title={title}
-          description={description}
-          isFocused={isFocused}
-          onPress={onPress}
+  const cardStyle = {
+    backgroundColor: dark ? 'rgba(255, 255, 255, 0.05)' : '#FFFFFF',
+    borderColor: dark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 0, 0, 0.08)',
+  };
+  const mutedColor = theme.colors.onSurfaceVariant;
+
+  let rowCounter = 0;
+  const renderCard = (cardKey: string, rows: Row[]) => (
+    <View
+      key={cardKey}
+      style={[styles.card, cardStyle]}
+      onLayout={e => {
+        cardOffsets.current[cardKey] = e.nativeEvent.layout.y;
+      }}>
+      {rows.map((row, i) => {
+        const index = rowCounter++;
+        const focused =
+          (isGamepadActive || Platform.isTV) && focusedIndex === index;
+        return (
+          <View
+            key={row.key}
+            onLayout={e => {
+              const l = e.nativeEvent.layout;
+              itemLayouts.current[index] = {
+                y: l.y,
+                height: l.height,
+                card: cardKey,
+              };
+              if (focused) {
+                scrollToFocused(index);
+              }
+            }}>
+            <SettingRow
+              title={row.title}
+              description={row.description}
+              icon={row.icon}
+              danger={row.danger}
+              isFocused={focused}
+              isLast={i === rows.length - 1}
+              onPress={row.onPress}
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
+
+  const renderSearchBox = () => (
+    <View
+      style={[
+        styles.searchBox,
+        {
+          backgroundColor: dark ? 'rgba(255, 255, 255, 0.06)' : '#FFFFFF',
+          borderColor: dark
+            ? 'rgba(255, 255, 255, 0.22)'
+            : 'rgba(0, 0, 0, 0.1)',
+        },
+      ]}>
+      <Icon source="magnify" size={20} color={mutedColor} />
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder={t('SettingsSearch')}
+        placeholderTextColor={mutedColor}
+        style={[styles.searchInput, {color: theme.colors.onSurface}]}
+        autoCorrect={false}
+        autoCapitalize="none"
+        returnKeyType="search"
+      />
+      {query.length > 0 ? (
+        <Pressable
+          onPress={() => setQuery('')}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <Icon source="close-circle" size={18} color={mutedColor} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+
+  const renderProfile = () => (
+    <View style={[styles.profileCard, cardStyle]}>
+      {gamerpic ? (
+        <Image
+          source={{uri: gamerpic}}
+          style={[
+            styles.avatar,
+            {borderColor: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.12)'},
+          ]}
         />
+      ) : (
+        <View
+          style={[
+            styles.avatar,
+            styles.avatarFallback,
+            {
+              backgroundColor: dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+              borderColor: dark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.12)',
+            },
+          ]}>
+          <Text style={[styles.avatarInitial, {color: theme.colors.onSurface}]}>
+            {(gamertag || '?').charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      )}
+      <View style={styles.profileInfo}>
+        <Text
+          style={[styles.profileName, {color: theme.colors.onSurface}]}
+          numberOfLines={1}>
+          {isAuthed ? gamertag || t('Current user') : t('NoLogin')}
+        </Text>
+        {isAuthed && rawTier ? (
+          <Text style={[styles.profileTier, {color: mutedColor}]} numberOfLines={1}>
+            {tierLabel(rawTier)}
+          </Text>
+        ) : null}
       </View>
+    </View>
+  );
+
+  const renderBody = () => {
+    if (activeCategory) {
+      const nodes: React.ReactNode[] = [];
+      activeCategory.sections.forEach(section => {
+        if (section.title) {
+          nodes.push(
+            <Text
+              key={`${section.key}_title`}
+              style={[styles.sectionHeading, {color: mutedColor}]}>
+              {section.title}
+            </Text>,
+          );
+        }
+        nodes.push(renderCard(section.key, section.rows));
+      });
+      return nodes;
+    }
+
+    if (trimmedQuery) {
+      return searchRows.length > 0 ? (
+        renderCard('search', searchRows)
+      ) : (
+        <Text style={[styles.empty, {color: mutedColor}]}>
+          {t('SettingsNoResult')}
+        </Text>
+      );
+    }
+
+    return (
+      <>
+        {renderProfile()}
+        {renderCard('categories', categoryRows)}
+        {logoutRow ? renderCard('logout', [logoutRow]) : null}
+        <View style={styles.version}>
+          <Text style={[styles.versionText, {color: mutedColor}]}>
+            {t('Version')}: v{pkg.version}
+          </Text>
+          <Text style={[styles.versionText, {color: mutedColor}]}>
+            © 2024-{new Date().getFullYear()} Geocld
+          </Text>
+        </View>
+      </>
     );
   };
 
@@ -330,360 +696,25 @@ function SettingsScreen({navigation}) {
     <View
       style={styles.container}
       onTouchStart={() => {
-        if (!Platform.isTV) setIsGamepadActive(false);
+        if (!Platform.isTV) {
+          setIsGamepadActive(false);
+        }
       }}>
       <Spinner loading={loading} text={t('Loading...')} />
 
       <ScrollView
         ref={scrollViewRef}
         removeClippedSubviews={false}
+        keyboardShouldPersistTaps="handled"
         onLayout={e => {
           scrollViewHeight.current = e.nativeEvent.layout.height;
         }}
-        contentContainerStyle={{
-          paddingBottom: isGamepadActive || Platform.isTV ? 160 : 20,
-        }}>
-        <React.Fragment key="bases">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              ⚙️ {t('BasesSettings')}
-            </Text>
-          </View>
-
-          {bases.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="xcloud">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              ☁️ {t('XcloudSettings')}
-            </Text>
-          </View>
-
-          {xcloud.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="display">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              🖥️ {t('DisplaySettings')}
-            </Text>
-          </View>
-
-          {display.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-
-          {renderItem(
-            t('Display'),
-            t('Set parameters such as screen clarity and saturation'),
-            () => {
-              const settings = getSettings();
-              if (
-                settings.render_engine === 'native' ||
-                settings.render_engine === 'nano'
-              ) {
-                Alert.alert(
-                  t('Display settings is not working in native render engine.'),
-                );
-                return;
-              }
-              navigation.navigate('Display');
-            },
-            'display_custom',
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="gamepad">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              🎮 {t('GamepadSettings')}
-            </Text>
-          </View>
-
-          {gamepad.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-
-          {renderItem(
-            t('GamepadTestTitle'),
-            t('GamepadTestDescription'),
-            () => {
-              navigation.navigate('GamepadTest');
-            },
-            'gamepad_test',
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="vgamepad">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              🧩 {t('vGamepadSettings')}
-            </Text>
-          </View>
-
-          {vgamepad.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-
-          {renderItem(
-            t('Customize virtual buttons'),
-            t('Customize buttons of virtual gamepad'),
-            () => {
-              navigation.navigate('VirtualGamepadSettings');
-            },
-            'vgamepad_custom',
-          )}
-
-          {renderItem(
-            t('Auto toggle hold buttons'),
-            t('Select what buttons become toggle holdable'),
-            () => {
-              navigation.navigate('HoldButtons');
-            },
-            'vgamepad_hold',
-          )}
-
-          {renderItem(
-            t('Virtual macro settings'),
-            t('Enable macro button and edit its action sequence'),
-            () => {
-              navigation.navigate('VirtualMacroSettings');
-            },
-            'vgamepad_macro',
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="audio">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              🔊 {t('AudioSettings')}
-            </Text>
-          </View>
-
-          {audio.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="xhome">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              {t('XchomeSettings')}
-            </Text>
-          </View>
-
-          {xhome.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="sensor">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              {t('SensorSettings')}
-            </Text>
-          </View>
-
-          {sensor.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="dualsense">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              {t('DualSense')}
-            </Text>
-          </View>
-
-          {renderItem(
-            t('DualSense_adaptive_trigger_left'),
-            `${t('DualSense_adaptive_trigger_left_desc')}`,
-            () =>
-              navigation.navigate({
-                name: 'Ds5',
-                params: {
-                  type: 'left',
-                },
-              }),
-            'ds5_left',
-          )}
-
-          {renderItem(
-            t('DualSense_adaptive_trigger_right'),
-            `${t('DualSense_adaptive_trigger_right_desc')}`,
-            () =>
-              navigation.navigate({
-                name: 'Ds5',
-                params: {
-                  type: 'right',
-                },
-              }),
-            'ds5_right',
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="server">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              🌐 {t('TurnServerSettings')}
-            </Text>
-          </View>
-
-          {server.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-          {renderItem(
-            t('TURN server'),
-            t('Custom TURN server'),
-            () => navigation.navigate('Server'),
-            'turn_server',
-          )}
-        </React.Fragment>
-
-        <React.Fragment key="others">
-          <View style={styles.contentTitle}>
-            <Text variant="titleLarge" style={titleTextStyle}>
-              {t('Others')}
-            </Text>
-          </View>
-
-          {others.map((meta, idx) =>
-            renderItem(
-              meta.title,
-              meta.description,
-              () => handleItemPress(meta.name),
-              meta.name || idx,
-            ),
-          )}
-
-          {renderItem(
-            t('Clear Cache'),
-            t('Clear XStreaming Cache Data(Keep login data)'),
-            () => handleClearCache(),
-            'clear_cache',
-          )}
-
-          {renderItem(
-            t('ConfigTransfer'),
-            t('ConfigTransferDescription'),
-            () => navigation.navigate('Transfer'),
-            'transfer',
-          )}
-
-          {renderItem(
-            t('Device testing'),
-            t('Testing current device and controller'),
-            () => navigation.navigate('DeviceInfos'),
-            'device_infos',
-          )}
-
-          {renderItem(
-            t('About'),
-            `${t('About XStreaming')}`,
-            () => {
-              if (currentLanguage === 'zh' || currentLanguage === 'zht') {
-                navigation.navigate('AboutZh');
-              } else {
-                navigation.navigate('About');
-              }
-            },
-            'about',
-          )}
-
-          {(currentLanguage === 'zh' || currentLanguage === 'zht') &&
-            renderItem(
-              '支持及交流',
-              '支持开发或交流使用心得',
-              () => navigation.navigate('Feedback'),
-              'feedback',
-            )}
-
-          {__DEV__ &&
-            renderItem(
-              'DEBUG',
-              'Enter debug',
-              () => handleItemPress('debug'),
-              'debug',
-            )}
-
-          {renderItem(
-            t('HistoryTitle'),
-            `${t('HistoryDesc')}`,
-            () => navigation.navigate('History'),
-            'history',
-          )}
-
-          {renderItem(t('Thanks'), undefined, () => navigation.navigate('Thanks'), 'thanks')}
-
-          {isAuthed
-            ? renderItem(
-                t('Logout'),
-                user ? `${t('Current user')}: ${user}` : undefined,
-                () => handleItemPress('logout'),
-                'logout',
-              )
-            : null}
-        </React.Fragment>
-
-        <View style={styles.version}>
-          <Text style={styles.versionText} variant="titleMedium">
-            {t('Version')}: v{pkg.version}
-          </Text>
-          <Text style={styles.versionText} variant="titleSmall">
-            © 2024-{new Date().getFullYear()} Geocld
-          </Text>
-        </View>
+        contentContainerStyle={[
+          styles.content,
+          {paddingBottom: isGamepadActive || Platform.isTV ? 160 : 32},
+        ]}>
+        {!activeCategory ? renderSearchBox() : null}
+        {renderBody()}
       </ScrollView>
 
       <GamepadFooterHints
@@ -701,24 +732,88 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  backdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
   },
-  contentTitle: {
-    padding: 15,
-    paddingBottom: 0,
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 1,
+    paddingHorizontal: 15,
+    marginBottom: 14,
   },
-  titleText: {
-    color: '#fff',
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14.5,
+    paddingVertical: 0,
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    marginBottom: 14,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  avatarFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  profileName: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  profileTier: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  card: {
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingVertical: 4,
+    marginBottom: 14,
+    overflow: 'hidden',
+  },
+  sectionHeading: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginTop: 6,
+    marginBottom: 8,
+    marginLeft: 8,
+  },
+  empty: {
+    textAlign: 'center',
+    paddingVertical: 48,
+    fontSize: 14,
   },
   version: {
-    paddingTop: 20,
-    paddingBottom: 50,
-    textAlign: 'center',
+    paddingTop: 14,
+    paddingBottom: 24,
+    alignItems: 'center',
   },
   versionText: {
-    textAlign: 'center',
-    paddingTop: 10,
+    fontSize: 12.5,
+    paddingTop: 4,
   },
 });
 
