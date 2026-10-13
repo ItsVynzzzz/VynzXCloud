@@ -32,6 +32,7 @@ import CustomVirtualGamepad from '../components/CustomVirtualGamepad';
 import VirtualGamepadEditor, {
   ButtonConfig,
 } from '../components/VirtualGamepadEditor';
+import InGameMenu from '../components/InGameMenu';
 import PerfPanel from '../components/PerfPanel';
 import RTCFsrView from '../components/RTCFsrView';
 import NativeTouchOverlay from '../components/NativeTouchOverlay';
@@ -2549,6 +2550,18 @@ export function NativeStreamScreenBase({
     setShowGamepadEditor(false);
   };
 
+  const handleMenuChangeSetting = React.useCallback(
+    (partial: Record<string, any>) => {
+      const nextSettings = {...getSettings(), ...partial};
+      saveSettings(nextSettings);
+      setSettings(nextSettings);
+      if ('custom_virtual_gamepad' in partial) {
+        setGamepadLayoutVersion(prev => prev + 1);
+      }
+    },
+    [],
+  );
+
   const savePortraitGamepadLayout = React.useCallback(
     (layout: PortraitGamepadControl[]) => {
       const nextSettings = {
@@ -2733,11 +2746,19 @@ export function NativeStreamScreenBase({
     t,
   ]);
 
+  // Menu in-game kini komponen RN (InGameMenu), bukan dialog native.
+  // Di sini hanya menyiapkan navigasi gamepad saat menu terbuka.
   React.useEffect(() => {
-    if (showModal) {
-      openOptionsModal();
+    if (!showModal) {
+      return;
     }
-  }, [openOptionsModal, showModal]);
+    if (portraitMode || isInPictureInPicture) {
+      handleCloseModal();
+      return;
+    }
+    GamepadManager.setCurrentScreen('');
+    resumeGamepadNavigation();
+  }, [showModal, portraitMode, isInPictureInPicture, handleCloseModal]);
 
   const renderVirtualGamepad = () => {
     if (portraitMode) {
@@ -3006,6 +3027,67 @@ export function NativeStreamScreenBase({
       />
 
       {renderMenu()}
+
+      <InGameMenu
+        visible={showModal && !portraitMode && !isInPictureInPicture}
+        connected={connectState === CONNECTED}
+        isCloud={route.params?.streamType === 'cloud'}
+        showVirtualGamepad={showVirtualGamepad}
+        showPerformance={showPerformance}
+        micAvailable={!!settings.enable_microphone}
+        micOn={openMicro}
+        audioGain={audioGain}
+        opacity={settings.virtual_gamepad_opacity ?? 0.7}
+        joystick={settings.virtual_gamepad_joystick ?? 1}
+        macroEnabled={!!settings.virtual_macro_enabled}
+        profile={settings.custom_virtual_gamepad || ''}
+        canPowerOff={!!settings.power_on && route.params?.streamType !== 'cloud'}
+        onClose={handleCloseModal}
+        onToggleGamepad={() => {
+          if (showVirtualGamepad) {
+            clearMacroTimers();
+          }
+          setShowVirtualGamepad(!showVirtualGamepad);
+        }}
+        onTogglePerformance={() => setShowPerformance(!showPerformance)}
+        onToggleMic={handleToggleMic}
+        onNexus={() => {
+          handleCloseModal();
+          gpState.Nexus = 1;
+          setTimeout(() => {
+            gpState.Nexus = 0;
+          }, 120);
+        }}
+        onNexusHold={() => {
+          handleCloseModal();
+          gpState.Nexus = 1;
+          setTimeout(() => {
+            gpState.Nexus = 0;
+          }, 1000);
+        }}
+        onSendText={() => {
+          handleCloseModal();
+          openSendTextDialog();
+        }}
+        onAudioGain={handleAudioGainChange}
+        onChangeSetting={handleMenuChangeSetting}
+        onEditLayout={() => {
+          handleCloseModal();
+          handleOpenGamepadEditor();
+        }}
+        onSaveExit={() => {
+          handleCloseModal();
+          pureStreamExit();
+        }}
+        onDisconnect={() => {
+          handleCloseModal();
+          requestExit(false);
+        }}
+        onDisconnectPowerOff={() => {
+          handleCloseModal();
+          requestExit(true);
+        }}
+      />
     </View>
   );
 }

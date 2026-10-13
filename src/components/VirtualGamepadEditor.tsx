@@ -1,27 +1,26 @@
 import React from 'react';
-import {View, StyleSheet, Dimensions, TouchableOpacity} from 'react-native';
-import {useTranslation} from 'react-i18next';
 import {
-  Portal,
-  Modal,
-  Card,
-  RadioButton,
-  Text,
-  Divider,
-  Button,
-  IconButton,
-  useTheme,
-} from 'react-native-paper';
-import Draggable from 'react-native-draggable';
-import Slider from '@react-native-community/slider';
+  Alert,
+  Animated,
+  BackHandler,
+  Dimensions,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import {useTranslation} from 'react-i18next';
+import {Icon, Portal, Text} from 'react-native-paper';
 import GridBackground from './GridBackground';
 import GamepadButton from './CustomGamepad/Button';
 import {getSettings as getGamepadLayouts} from '../store/gamepadStore';
 import {
+  VIRTUAL_MACRO_BUTTON_NAME,
   createDefaultMacroLayoutButton,
   ensureMacroLayoutButton,
 } from '../utils/virtualMacro';
 import {
+  VIRTUAL_DPAD_BUTTON_NAME,
   createDefaultVirtualDPadButton,
   ensureVirtualDPadLayoutButton,
 } from '../utils/virtualDPad';
@@ -42,6 +41,67 @@ export interface VirtualGamepadEditorProps {
   onSave: (buttons: ButtonConfig[]) => void;
   onCancel: () => void;
 }
+
+const GRID = 10;
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 3;
+const SCALE_STEP = 0.1;
+
+const LABELS: Record<string, string> = {
+  LeftTrigger: 'LT',
+  RightTrigger: 'RT',
+  LeftShoulder: 'LB',
+  RightShoulder: 'RB',
+  A: 'A',
+  B: 'B',
+  X: 'X',
+  Y: 'Y',
+  LeftThumb: 'L3',
+  RightThumb: 'R3',
+  View: 'View',
+  Menu: 'Menu',
+  Nexus: 'Xbox',
+  DPad: 'D-Pad',
+  LeftStick: 'Stick L',
+  RightStick: 'Stick R',
+  [VIRTUAL_MACRO_BUTTON_NAME]: 'Macro',
+};
+
+const isStick = (name: string) => name === 'LeftStick' || name === 'RightStick';
+
+// Ukuran dasar tiap elemen, sama dengan yang digambar saat bermain.
+const baseSize = (button: ButtonConfig) => {
+  const name = button.name;
+  if (name === VIRTUAL_DPAD_BUTTON_NAME) {
+    return {w: button.width ?? 160, h: button.height ?? 160};
+  }
+  if (isStick(name)) {
+    return {w: 120, h: 120};
+  }
+  if (['A', 'B', 'X', 'Y', VIRTUAL_MACRO_BUTTON_NAME].includes(name)) {
+    return {w: 60, h: 60};
+  }
+  if (
+    ['LeftTrigger', 'RightTrigger', 'LeftShoulder', 'RightShoulder'].includes(
+      name,
+    )
+  ) {
+    return {w: 80, h: 50};
+  }
+  if (name === 'View' || name === 'Menu') {
+    return {w: 40, h: 40};
+  }
+  if (name === 'Nexus') {
+    return {w: 44, h: 44};
+  }
+  return {w: 50, h: 50};
+};
+
+const sizeOf = (button: ButtonConfig) => {
+  const base = baseSize(button);
+  const scale = isStick(button.name) ? 1 : button.scale ?? 1;
+  return {w: base.w * scale, h: base.h * scale};
+};
 
 const buildDefaultButtons = (): ButtonConfig[] => {
   const {width, height} = Dimensions.get('window');
@@ -71,6 +131,156 @@ const buildDefaultButtons = (): ButtonConfig[] => {
   ];
 };
 
+type ItemProps = {
+  button: ButtonConfig;
+  selected: boolean;
+  snap: boolean;
+  bounds: {w: number; h: number};
+  onSelect: (name: string) => void;
+  onMoveEnd: (name: string, x: number, y: number) => void;
+};
+
+// Satu elemen yang bisa digeser. Posisi dihitung di sini (tanpa render ulang
+// saat menggeser), jadi geserannya mulus dan tidak berkedip.
+const EditorItem = React.memo(
+  ({button, selected, snap, bounds, onSelect, onMoveEnd}: ItemProps) => {
+    const {w, h} = sizeOf(button);
+    const hidden = button.show === false;
+    const round = isStick(button.name);
+
+    const pan = React.useRef(
+      new Animated.ValueXY({x: button.x, y: button.y}),
+    ).current;
+    const latest = React.useRef({button, w, h, snap, bounds, onSelect, onMoveEnd});
+    latest.current = {button, w, h, snap, bounds, onSelect, onMoveEnd};
+    const start = React.useRef({x: button.x, y: button.y});
+
+    React.useEffect(() => {
+      pan.setValue({x: button.x, y: button.y});
+    }, [button.x, button.y, pan]);
+
+    const responder = React.useRef(
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: () => {
+          const cur = latest.current;
+          start.current = {x: cur.button.x, y: cur.button.y};
+          cur.onSelect(cur.button.name);
+        },
+        onPanResponderMove: (_e, g) => {
+          pan.setValue({x: start.current.x + g.dx, y: start.current.y + g.dy});
+        },
+        onPanResponderRelease: (_e, g) => finish(g.dx, g.dy),
+        onPanResponderTerminate: (_e, g) => finish(g.dx, g.dy),
+      }),
+    ).current;
+
+    function finish(dx: number, dy: number) {
+      const cur = latest.current;
+      // Ketukan singkat = hanya memilih, jangan geser/rapikan posisinya.
+      if (Math.abs(dx) < 3 && Math.abs(dy) < 3) {
+        pan.setValue(start.current);
+        return;
+      }
+      const toGrid = (v: number) =>
+        cur.snap ? Math.round(v / GRID) * GRID : Math.round(v);
+      const maxX = Math.max(0, cur.bounds.w - cur.w);
+      const maxY = Math.max(0, cur.bounds.h - cur.h);
+      const nx = Math.min(maxX, Math.max(0, toGrid(start.current.x + dx)));
+      const ny = Math.min(maxY, Math.max(0, toGrid(start.current.y + dy)));
+      pan.setValue({x: nx, y: ny});
+      cur.onMoveEnd(cur.button.name, nx, ny);
+    }
+
+    const ringRadius = round ? w / 2 + 5 : 16;
+
+    return (
+      <Animated.View
+        {...responder.panHandlers}
+        style={[
+          styles.item,
+          {
+            width: w,
+            height: h,
+            zIndex: selected ? 20 : 1,
+            opacity: hidden ? 0.4 : 1,
+            transform: pan.getTranslateTransform(),
+          },
+        ]}>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.ring,
+            selected
+              ? styles.ringSelected
+              : hidden
+                ? styles.ringHidden
+                : styles.ringIdle,
+            {borderRadius: ringRadius},
+          ]}
+        />
+        <View pointerEvents="none" style={styles.preview}>
+          {round ? (
+            <View
+              style={[
+                styles.stick,
+                {width: w, height: h, borderRadius: w / 2},
+              ]}>
+              <View style={styles.stickInner} />
+              <Text style={styles.stickText}>{LABELS[button.name]}</Text>
+            </View>
+          ) : (
+            <GamepadButton
+              name={button.name}
+              width={button.width ?? 50}
+              height={button.height ?? 50}
+              scale={button.scale ?? 1}
+            />
+          )}
+        </View>
+      </Animated.View>
+    );
+  },
+);
+
+type ChipProps = {
+  label: string;
+  onPress: () => void;
+  active?: boolean;
+  primary?: boolean;
+  icon?: string;
+};
+
+const Chip = ({label, onPress, active, primary, icon}: ChipProps) => (
+  <Pressable
+    onPress={onPress}
+    accessibilityRole="button"
+    style={({pressed}) => [
+      styles.chip,
+      active && styles.chipActive,
+      primary && styles.chipPrimary,
+      pressed && !primary && styles.chipPressed,
+    ]}>
+    {icon ? (
+      <Icon
+        source={icon}
+        size={16}
+        color={primary ? '#000000' : '#FFFFFF'}
+      />
+    ) : null}
+    <Text
+      style={[
+        styles.chipText,
+        primary && {color: '#000000'},
+        icon ? {marginLeft: 6} : null,
+      ]}>
+      {label}
+    </Text>
+  </Pressable>
+);
+
 const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
   visible,
   profileName,
@@ -78,335 +288,406 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
   onCancel,
 }) => {
   const {t} = useTranslation();
-  const theme = useTheme();
   const [buttons, setButtons] = React.useState<ButtonConfig[]>([]);
-  const [defaultButtons, setDefaultButtons] = React.useState<ButtonConfig[]>(
-    [],
-  );
-  const [showGrid, setShowGrid] = React.useState(true);
-  const [showTips, setShowTips] = React.useState(true);
-  const [currentButton, setCurrentButton] = React.useState('');
-  const [currentScale, setCurrentScale] = React.useState(1);
-  const [currentShow, setCurrentShow] = React.useState(true);
-  const [showButtonModal, setShowButtonModal] = React.useState(false);
-  const [reloadKey, setReloadKey] = React.useState(Date.now());
+  const [initial, setInitial] = React.useState('[]');
+  const [defaults, setDefaults] = React.useState<ButtonConfig[]>([]);
+  const [selected, setSelected] = React.useState('');
+  const [snap, setSnap] = React.useState(true);
+  const [bounds, setBounds] = React.useState(() => {
+    const {width, height} = Dimensions.get('window');
+    return {w: width, h: height};
+  });
 
   React.useEffect(() => {
     if (!visible) {
       return;
     }
-    const defaults = buildDefaultButtons();
-    setDefaultButtons(defaults);
-    const layouts = getGamepadLayouts();
-    const layout = layouts[profileName];
+    const {width, height} = Dimensions.get('window');
+    setBounds({w: width, h: height});
+    const defaultList = buildDefaultButtons();
+    setDefaults(defaultList);
+    const layout = getGamepadLayouts()[profileName];
+    let loaded: ButtonConfig[];
     if (layout && Array.isArray(layout)) {
       const withDPad = ensureVirtualDPadLayoutButton(
         layout,
-        createDefaultVirtualDPadButton(
-          15,
-          Dimensions.get('window').height - 175,
-          160,
-          160,
-        ),
+        createDefaultVirtualDPadButton(15, height - 175, 160, 160),
       );
-      const withMacro = ensureMacroLayoutButton(
+      loaded = ensureMacroLayoutButton(
         withDPad,
-        createDefaultMacroLayoutButton(
-          Dimensions.get('window').width,
-          Dimensions.get('window').height,
-        ),
-      );
-      setButtons(withMacro.map(button => ({...button})));
+        createDefaultMacroLayoutButton(width, height),
+      ).map((button: ButtonConfig) => ({...button}));
     } else {
-      setButtons(defaults.map(button => ({...button})));
+      loaded = defaultList.map(button => ({...button}));
     }
-    setShowGrid(true);
-    setShowTips(true);
-    setReloadKey(Date.now());
+    setButtons(loaded);
+    setInitial(JSON.stringify(loaded));
+    setSelected('');
+    setSnap(true);
   }, [visible, profileName]);
+
+  const dirty = JSON.stringify(buttons) !== initial;
+
+  const requestCancel = React.useCallback(() => {
+    if (!dirty) {
+      onCancel();
+      return;
+    }
+    Alert.alert(t('Warning'), t('EdDiscard'), [
+      {text: t('Cancel'), style: 'cancel'},
+      {text: t('Confirm'), style: 'destructive', onPress: onCancel},
+    ]);
+  }, [dirty, onCancel, t]);
+
+  React.useEffect(() => {
+    if (!visible) {
+      return;
+    }
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      requestCancel();
+      return true;
+    });
+    return () => sub.remove();
+  }, [visible, requestCancel]);
+
+  const handleMoveEnd = React.useCallback(
+    (name: string, x: number, y: number) => {
+      setButtons(prev =>
+        prev.map(button => (button.name === name ? {...button, x, y} : button)),
+      );
+    },
+    [],
+  );
+
+  const current = buttons.find(button => button.name === selected);
+
+  const changeScale = (delta: number) => {
+    if (!current) {
+      return;
+    }
+    const next = Math.round(((current.scale ?? 1) + delta) * 10) / 10;
+    const clamped = Math.min(MAX_SCALE, Math.max(MIN_SCALE, next));
+    setButtons(prev =>
+      prev.map(button =>
+        button.name === current.name ? {...button, scale: clamped} : button,
+      ),
+    );
+  };
+
+  const toggleShow = () => {
+    if (!current) {
+      return;
+    }
+    setButtons(prev =>
+      prev.map(button =>
+        button.name === current.name
+          ? {...button, show: button.show === false}
+          : button,
+      ),
+    );
+  };
+
+  const handleReset = () => {
+    Alert.alert(t('Warning'), t('EdResetConfirm'), [
+      {text: t('Cancel'), style: 'cancel'},
+      {
+        text: t('Confirm'),
+        style: 'destructive',
+        onPress: () => {
+          setButtons(defaults.map(button => ({...button})));
+          setSelected('');
+        },
+      },
+    ]);
+  };
+
+  const handleSave = () => {
+    onSave(
+      buttons.map(button => ({
+        ...button,
+        x: Math.round(button.x),
+        y: Math.round(button.y),
+      })),
+    );
+  };
 
   if (!visible) {
     return null;
   }
 
-  const handleDrag = (name: string, x: number, y: number) => {
-    const next = buttons.map(button => {
-      if (button.name === name) {
-        return {...button, x: Math.round(x), y: Math.round(y)};
-      }
-      return button;
-    });
-    setButtons(next);
-  };
-
-  const handleChangeSize = (scale: number) => {
-    const next = buttons.map(button =>
-      button.name === currentButton ? {...button, scale} : button,
-    );
-    setButtons(next);
-  };
-
-  const handleChangeShow = (value: boolean) => {
-    setCurrentShow(value);
-    const next = buttons.map(button =>
-      button.name === currentButton ? {...button, show: value} : button,
-    );
-    setButtons(next);
-  };
-
-  const handleReset = () => {
-    setButtons(defaultButtons.map(button => ({...button})));
-    setReloadKey(Date.now());
-  };
-
-  const handleSave = () => {
-    onSave(buttons);
-  };
-
-  const renderButtonOptions = () => {
-    return (
-      <Portal>
-        <Modal
-          visible={showButtonModal}
-          onDismiss={() => setShowButtonModal(false)}
-          contentContainerStyle={styles.modal}>
-          <Card>
-            <Card.Content>
-              {currentButton !== 'LeftStick' &&
-                currentButton !== 'RightStick' && (
-                  <>
-                    <View style={styles.title}>
-                      <Text>
-                        {t('Size')}: {currentScale}
-                      </Text>
-                      <Divider style={styles.divider} />
-                    </View>
-                    <Slider
-                      value={currentScale}
-                      minimumValue={0.5}
-                      maximumValue={4}
-                      step={0.1}
-                      onValueChange={val => {
-                        const _val = Math.round(val * 10) / 10;
-                        setCurrentScale(_val);
-                        handleChangeSize(_val);
-                      }}
-                      minimumTrackTintColor={theme.colors.primary}
-                      maximumTrackTintColor="grey"
-                    />
-                  </>
-                )}
-
-              <View style={styles.title}>
-                <Text>{t('ShowTitle')}</Text>
-                <Divider style={styles.divider} />
-              </View>
-              <RadioButton.Group
-                onValueChange={val => handleChangeShow(val === 'true')}
-                value={currentShow ? 'true' : 'false'}>
-                <RadioButton.Item label={t('Show')} value="true" />
-                <RadioButton.Item label={t('Hide')} value="false" />
-              </RadioButton.Group>
-            </Card.Content>
-          </Card>
-        </Modal>
-      </Portal>
-    );
-  };
-
-  const renderTipsModal = () => (
-    <Portal>
-      <Modal
-        visible={showTips}
-        onDismiss={() => setShowTips(false)}
-        contentContainerStyle={styles.modal}>
-        <Card>
-          <Card.Content>
-            <Text>
-              TIPS1:{' '}
-              {t(
-                'The position of custom virtual buttons may have discrepancies with actual rendering. Please refer to the actual effect for accuracy',
-              )}
-            </Text>
-            <Text>
-              TIPS2: {t('Click on an element to set its size and display')}
-            </Text>
-            <Text>TIPS3: {t('Drag elements to adjust their position')}</Text>
-          </Card.Content>
-        </Card>
-      </Modal>
-    </Portal>
-  );
-
-  const renderButtons = () => (
-    <>
-      {buttons.map(button => {
-        if (button.name === 'LeftStick' || button.name === 'RightStick') {
-          if (!button.show) {
-            return null;
-          }
-          return (
-            <Draggable
-              x={button.x}
-              y={button.y}
-              key={button.name + reloadKey}
-              renderSize={100}
-              renderColor="white"
-              isCircle
-              onShortPressRelease={() => {
-                setCurrentButton(button.name);
-                setCurrentScale(1);
-                setCurrentShow(button.show ?? true);
-                setShowButtonModal(true);
-              }}
-              onDragRelease={(_, __, bounds) => {
-                handleDrag(button.name, bounds.left, bounds.top);
-                setReloadKey(Date.now());
-              }}
-            />
-          );
-        }
-        if (!button.show) {
-          return null;
-        }
-        return (
-          <Draggable
-            x={button.x}
-            y={button.y}
-            key={button.name + reloadKey}
-            onShortPressRelease={() => {
-              setCurrentButton(button.name);
-              setCurrentScale(button.scale || 1);
-              setCurrentShow(button.show ?? true);
-              setShowButtonModal(true);
-            }}
-            onDragRelease={(_, __, bounds) => {
-              handleDrag(button.name, bounds.left, bounds.top);
-              setReloadKey(Date.now());
-            }}>
-            <GamepadButton
-              name={button.name}
-              width={button.width ?? 50}
-              height={button.height ?? 50}
-              scale={button.scale ?? 1}
-            />
-          </Draggable>
-        );
-      })}
-    </>
-  );
-
   return (
     <Portal>
-      <View style={styles.overlay}>
-        {renderTipsModal()}
-        {renderButtonOptions()}
-
-        {showGrid && <GridBackground gridSize={20} />}
-
-        <View style={styles.actions}>
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            style={styles.actionButton}>
-            {t('Save')}
-          </Button>
-          <Button
-            mode="outlined"
-            onPress={handleReset}
-            style={styles.actionButton}>
-            {t('Reset')}
-          </Button>
-          <Button mode="text" onPress={onCancel} style={styles.actionButton}>
-            {t('Cancel')}
-          </Button>
-        </View>
-
-        <TouchableOpacity
-          style={styles.gridToggle}
-          onPress={() => setShowGrid(!showGrid)}>
-          <Text style={styles.gridToggleText}>
-            {showGrid ? 'Hide Grid' : 'Show Grid'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.profileBadge}>
-          <Text style={styles.profileText}>
-            Profile: {profileName || 'Default'}
-          </Text>
-          <IconButton
-            icon="close"
-            onPress={onCancel}
-            style={styles.closeButton}
+      <View style={styles.root}>
+        {snap ? (
+          <GridBackground
+            gridSize={20}
+            gridColor="rgba(255, 255, 255, 0.07)"
           />
-        </View>
+        ) : null}
 
-        {renderButtons()}
+        {buttons.map(button => (
+          <EditorItem
+            key={button.name}
+            button={button}
+            selected={button.name === selected}
+            snap={snap}
+            bounds={bounds}
+            onSelect={setSelected}
+            onMoveEnd={handleMoveEnd}
+          />
+        ))}
+
+        <View pointerEvents="box-none" style={styles.topWrap}>
+          <View style={styles.bar}>
+            <View style={styles.titleBox}>
+              <Text style={styles.title}>{t('EdTitle')}</Text>
+              <Text style={styles.subtitle} numberOfLines={1}>
+                {profileName}
+              </Text>
+            </View>
+            <Chip
+              label={t('EdGrid')}
+              icon="grid"
+              active={snap}
+              onPress={() => setSnap(v => !v)}
+            />
+            <Chip label={t('Reset')} icon="restore" onPress={handleReset} />
+            <Chip label={t('Cancel')} onPress={requestCancel} />
+            <Chip label={t('Save')} primary onPress={handleSave} />
+          </View>
+
+          <View style={styles.dock}>
+            {current ? (
+              <>
+                <View style={styles.nameTag}>
+                  <Text style={styles.nameText}>
+                    {LABELS[current.name] || current.name}
+                  </Text>
+                </View>
+
+                {isStick(current.name) ? (
+                  <Text style={styles.fixedText}>{t('EdSizeFixed')}</Text>
+                ) : (
+                  <View style={styles.stepper}>
+                    <Pressable
+                      onPress={() => changeScale(-SCALE_STEP)}
+                      accessibilityLabel={t('Size')}
+                      style={styles.stepBtn}>
+                      <Icon source="minus" size={20} color="#FFFFFF" />
+                    </Pressable>
+                    <Text style={styles.stepValue}>
+                      {(current.scale ?? 1).toFixed(1)}×
+                    </Text>
+                    <Pressable
+                      onPress={() => changeScale(SCALE_STEP)}
+                      accessibilityLabel={t('Size')}
+                      style={styles.stepBtn}>
+                      <Icon source="plus" size={20} color="#FFFFFF" />
+                    </Pressable>
+                  </View>
+                )}
+
+                <Pressable onPress={toggleShow} style={styles.eyeBtn}>
+                  <Icon
+                    source={
+                      current.show === false ? 'eye-off-outline' : 'eye-outline'
+                    }
+                    size={20}
+                    color="#FFFFFF"
+                  />
+                  <Text style={styles.eyeText}>
+                    {current.show === false ? t('Show') : t('Hide')}
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              <Text style={styles.hint}>{t('EdHint')}</Text>
+            )}
+          </View>
+        </View>
       </View>
     </Portal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  root: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-    zIndex: 999,
+    backgroundColor: 'rgba(0, 0, 0, 0.62)',
   },
-  modal: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    marginLeft: '25%',
-    marginRight: '25%',
-  },
-  title: {
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  divider: {
-    marginTop: 10,
-  },
-  actions: {
+  item: {
     position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    zIndex: 1000,
+    left: 0,
+    top: 0,
   },
-  actionButton: {
-    flex: 1,
-    marginHorizontal: 8,
+  preview: {
+    ...StyleSheet.absoluteFillObject,
   },
-  gridToggle: {
+  ring: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    zIndex: 1000,
+    top: -5,
+    left: -5,
+    right: -5,
+    bottom: -5,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  gridToggleText: {
-    color: '#fff',
+  ringSelected: {
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
-  profileBadge: {
+  ringHidden: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255, 255, 255, 0.7)',
+  },
+  ringIdle: {},
+  stick: {
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.55)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stickInner: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  stickText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  topWrap: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 50,
+  },
+  bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 6,
+    borderRadius: 28,
+    backgroundColor: 'rgba(14, 14, 14, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    gap: 6,
+  },
+  titleBox: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    maxWidth: 150,
   },
-  profileText: {
-    color: '#fff',
+  title: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
-  closeButton: {
-    marginLeft: 4,
+  subtitle: {
+    color: 'rgba(255, 255, 255, 0.55)',
+    fontSize: 11,
+  },
+  chip: {
+    height: 38,
+    paddingHorizontal: 14,
+    borderRadius: 19,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  chipActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: '#FFFFFF',
+  },
+  chipPrimary: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
+  },
+  chipPressed: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  chipText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '600',
+  },
+  dock: {
+    marginTop: 8,
+    minHeight: 44,
+    paddingHorizontal: 8,
+    borderRadius: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(14, 14, 14, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    gap: 10,
+  },
+  hint: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12.5,
+    paddingHorizontal: 12,
+  },
+  nameTag: {
+    height: 30,
+    minWidth: 44,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+  },
+  nameText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  stepValue: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    minWidth: 54,
+    textAlign: 'center',
+  },
+  fixedText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 12.5,
+  },
+  eyeBtn: {
+    height: 38,
+    paddingHorizontal: 12,
+    borderRadius: 19,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  eyeText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    marginLeft: 6,
   },
 });
 
