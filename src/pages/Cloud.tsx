@@ -2494,8 +2494,10 @@ function CloudScreen({ navigation, route }: any) {
     onBack: () => {
       if (filterCategory !== 'all') {
         handleBackToHome();
-      } else {
+      } else if (navigation.canGoBack()) {
         navigation.goBack();
+      } else {
+        BackHandler.exitApp();
       }
     },
   });
