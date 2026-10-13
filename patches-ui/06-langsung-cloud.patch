@@ -1,0 +1,241 @@
+diff --git a/src/pages/Cloud.tsx b/src/pages/Cloud.tsx
+index 9d5aea7..508d9be 100644
+--- a/src/pages/Cloud.tsx
++++ b/src/pages/Cloud.tsx
+@@ -2494,8 +2494,10 @@ function CloudScreen({ navigation, route }: any) {
+     onBack: () => {
+       if (filterCategory !== 'all') {
+         handleBackToHome();
+-      } else {
++      } else if (navigation.canGoBack()) {
+         navigation.goBack();
++      } else {
++        BackHandler.exitApp();
+       }
+     },
+   });
+diff --git a/src/pages/Home.tsx b/src/pages/Home.tsx
+index 8b570f8..951b15d 100644
+--- a/src/pages/Home.tsx
++++ b/src/pages/Home.tsx
+@@ -209,6 +209,7 @@ function HomeScreen({navigation, route}) {
+           },
+         ],
+       );
++      navigation.replace('Cloud');
+       return;
+     }
+ 
+@@ -248,35 +249,8 @@ function HomeScreen({navigation, route}) {
+       setShowMsalLogin(false);
+       setShowMsal(false);
+ 
+-      const webApi = new WebApi(_webToken);
+-
+-      try {
+-        authenticationProgress('Fetching consoles...');
+-        const _xHomeApi = new XcloudApi(
+-          _streamingTokens.xHomeToken.getDefaultRegion().baseUri,
+-          _streamingTokens.xHomeToken.data.gsToken,
+-          'home',
+-          () => {},
+-        );
+-        _xHomeApiRef.current = _xHomeApi;
+-
+-        let _consoles: any = await _xHomeApi.getConsoles();
+-
+-        if (!_consoles || !_consoles.length) {
+-          _consoles = await webApi.getConsoles();
+-        }
+-
+-        if (_consoles && _consoles.length > 0) {
+-          setConsoles(_consoles);
+-          saveConsolesData({
+-            consoles: _consoles,
+-          });
+-        }
+-      } catch (e: any) {
+-        log.error('Fetch consoles error:', e);
+-      } finally {
+-        setLoading(false);
+-      }
++      // Langsung ke daftar game (Cloud), layar Konsol dilewati
++      navigation.replace('Cloud');
+     };
+ 
+     // Auth failed callback
+@@ -372,12 +346,8 @@ function HomeScreen({navigation, route}) {
+         });
+       }
+     } else if (!_isLogined.current && _isFocused.current) {
+-      // If we already have cached consoles displayed, refresh silently without freezing UI
+-      const hasCachedConsoles = consoles.length > 0;
+-      if (!hasCachedConsoles) {
+-        setLoading(true);
+-        setLoadingText(t('Checking login status...'));
+-      }
++      setLoading(true);
++      setLoadingText(t('Checking login status...'));
+ 
+       _authentication.current
+         .checkAuthentication()
+@@ -996,158 +966,8 @@ function HomeScreen({navigation, route}) {
+           />
+         </View>
+       );
+-    } else {
+-      return (
+-        <SafeAreaView
+-          style={styles.container}
+-          onTouchStart={() => {
+-            if (!Platform.isTV) setIsGamepadActive(false);
+-          }}>
+-          <ScrollView
+-            style={styles.scrollView}
+-            contentContainerStyle={[
+-              styles.scrollContent,
+-              (isGamepadActive || Platform.isTV) && {paddingBottom: 64},
+-            ]}>
+-            <View style={[styles.blockTitle]}>
+-              <Text variant="titleLarge" style={styles.blockTitleText}>
+-                {t('Consoles')}
+-              </Text>
+-            </View>
+-
+-            {consoles.length > 0 ? (
+-              <View style={styles.consoleList}>
+-                <View style={styles.consoleGrid}>
+-                  {consoles.map((item: any, index: number) => {
+-                    const isItemFocused =
+-                      (isGamepadActive || Platform.isTV) &&
+-                      focusedSection === 'consoles' &&
+-                      focusedIndex === index;
+-                    return (
+-                      <View
+-                        key={item.serverId || index}
+-                        style={[
+-                          styles.consoleItem,
+-                          numColumns === 4
+-                            ? styles.listItemH
+-                            : styles.listItemV,
+-                          isItemFocused && {zIndex: 99, overflow: 'visible'},
+-                        ]}>
+-                        <ConsoleItem
+-                          isFocused={isItemFocused}
+-                          consoleItem={item}
+-                          onPress={() => handleStartStream(item.serverId)}
+-                          onPoweronStream={() =>
+-                            handlePoweronAndStream(item.serverId)
+-                          }
+-                          onPoweron={() => handlePower(item.serverId)}
+-                          onPoweroff={() => handlePower(item.serverId, true)}
+-                        />
+-                      </View>
+-                    );
+-                  })}
+-                </View>
+-              </View>
+-            ) : (
+-              <View style={styles.noConsoles}>
+-                <View style={emptyConsoleCardStyle}>
+-                  <Text style={styles.emptyConsoleDesc}>{t('NoConsoles')}</Text>
+-                  <View style={styles.emptyConsoleActions}>
+-                    <Button
+-                      mode={
+-                        (isGamepadActive || Platform.isTV) &&
+-                        focusedSection === 'refresh'
+-                          ? 'elevated'
+-                          : 'contained-tonal'
+-                      }
+-                      style={[
+-                        styles.emptyActionBtn,
+-                        (isGamepadActive || Platform.isTV) &&
+-                          focusedSection === 'refresh' &&
+-                          styles.actionButtonFocused,
+-                      ]}
+-                      onPress={handleRefreshConsoles}>
+-                      {t('Refresh')}
+-                    </Button>
+-                  </View>
+-                </View>
+-              </View>
+-            )}
+-
+-            <View style={styles.blockTitle}>
+-              <Text variant="titleLarge" style={styles.blockTitleText}>
+-                {t('More')}
+-              </Text>
+-            </View>
+-
+-            <View style={styles.moreItems}>
+-              <View
+-                style={[
+-                  styles.moreItem,
+-                  {width: width > 600 ? '15%' : width / 2 - 40},
+-                  (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 0 && {zIndex: 99, overflow: 'visible'},
+-                ]}>
+-                <HomeItem
+-                  isFocused={
+-                    (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 0
+-                  }
+-                  title={t('Xcloud')}
+-                  icon={'google-controller'}
+-                  color={'#FFB900'}
+-                  onPress={() => navigation.navigate('Cloud')}
+-                />
+-              </View>
+-
+-              <View
+-                style={[
+-                  styles.moreItem,
+-                  {width: width > 600 ? '15%' : width / 2 - 40},
+-                  (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 1 && {zIndex: 99, overflow: 'visible'},
+-                ]}>
+-                <HomeItem
+-                  isFocused={
+-                    (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 1
+-                  }
+-                  title={t('Achivements')}
+-                  icon={'trophy'}
+-                  color={'#E81123'}
+-                  onPress={() => navigation.navigate('Achivements')}
+-                />
+-              </View>
+-
+-              <View
+-                style={[
+-                  styles.moreItem,
+-                  {width: width > 600 ? '15%' : width / 2 - 40},
+-                  (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 2 && {zIndex: 99, overflow: 'visible'},
+-                ]}>
+-                <HomeItem
+-                  isFocused={
+-                    (isGamepadActive || Platform.isTV) &&
+-                    focusedSection === 'more' &&
+-                    focusedIndex === 2
+-                  }
+-                  title={t('Settings')}
+-                  icon={'cog-outline'}
+-                  color={'#0078D7'}
+-                  onPress={() => navigation.navigate('Settings')}
+-                />
+-              </View>
+-            </View>
+-          </ScrollView>
+-        </SafeAreaView>
+-      );
+     }
++    return null;
+   };
+ 
+   return (
