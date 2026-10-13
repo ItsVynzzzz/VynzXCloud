@@ -35,6 +35,8 @@ import {
 
 import Spinner from '../components/Spinner';
 import XStreamingGameCard from '../components/XStreamingGameCard';
+import HeroBanner, {getHeroUrl} from '../components/HeroBanner';
+import BottomNavBar from '../components/BottomNavBar';
 import XboxLogo from '../components/XboxLogo';
 import Empty from '../components/Empty';
 import SessionReportModal from '../components/SessionReportModal';
@@ -1759,6 +1761,9 @@ function CloudScreen({ navigation, route }: any) {
 
   const isScreenFocused = useIsFocused();
   const [isGamepadActive, setIsGamepadActive] = useGamepadActiveState();
+  // Tampilan modern (banner + bilah navigasi bawah) hanya untuk layar sentuh potret.
+  // Pengguna gamepad/TV/landscape tetap memakai tata letak klasik supaya fokus tombol tidak hilang.
+  const modernChrome = !isLandscape && !isLargeScreen && !isGamepadActive;
   const isGamepadConnected = useGamepadConnectedState();
   const shouldHidePlayButton =
     Platform.isTV || (isGamepadConnected && isGamepadActive);
@@ -2521,6 +2526,15 @@ function CloudScreen({ navigation, route }: any) {
     [horizontalCardWidth],
   );
 
+  const heroTitles = React.useMemo(() => {
+    if (!modernChrome) {
+      return [];
+    }
+    const lists = [newTitles, playWithGamePassTitles, freeWithAdsTitlesList, recentTitles];
+    const source = lists.find(list => Array.isArray(list) && list.some(getHeroUrl)) || [];
+    return source.filter(getHeroUrl).slice(0, 6);
+  }, [modernChrome, newTitles, playWithGamePassTitles, freeWithAdsTitlesList, recentTitles]);
+
   const carouselsHeader = React.useMemo(() => {
     if (filterCategory !== 'all' || keyword.length > 0) {
       return null;
@@ -2528,6 +2542,14 @@ function CloudScreen({ navigation, route }: any) {
 
     return (
       <View style={styles.carouselsContainer}>
+        {heroTitles.length > 0 && (
+          <HeroBanner
+            titles={heroTitles}
+            width={screenWidth - PADDING_H * 2}
+            onPress={handleViewDetail}
+            onPlayPress={handleDirectPlay}
+          />
+        )}
         <CarouselSection
           title={t('Jump back in')}
           data={recentTitles}
@@ -2717,6 +2739,9 @@ function CloudScreen({ navigation, route }: any) {
     handleShowAll,
     setSectionRef,
     onMomentumScrollEnd,
+    heroTitles,
+    screenWidth,
+    PADDING_H,
     t,
   ]);
 
@@ -2966,7 +2991,7 @@ function CloudScreen({ navigation, route }: any) {
       }}>
       <StatusBar
         barStyle={isLight ? 'dark-content' : 'light-content'}
-        backgroundColor={isLight ? '#FCFBFF' : '#111320'}
+        backgroundColor={isLight ? '#FCFBFF' : '#000000'}
         translucent={true}
       />
       <Spinner loading={loading} text={t('Loading...')} />
@@ -3097,6 +3122,7 @@ function CloudScreen({ navigation, route }: any) {
                   accessibilityRole="button"
                   style={({ pressed, focused }: any) => [
                     styles.settingsIconButton,
+                    modernChrome && styles.modernHidden,
                     isLandscape && styles.settingsIconButtonLandscape,
                     isLight && styles.settingsIconButtonLight,
                     (isSettingsFocused || focused) && [
@@ -3121,6 +3147,7 @@ function CloudScreen({ navigation, route }: any) {
             <View
               style={[
                 styles.searchRow,
+                modernChrome && keyword.length === 0 && styles.modernHidden,
                 isLandscape && styles.searchRowLandscape,
               ]}>
               <Pressable
@@ -3493,6 +3520,7 @@ function CloudScreen({ navigation, route }: any) {
                 styles.gridContentContainer,
                 isLargeScreen && styles.gridContentContainerLarge,
                 (isGamepadActive || Platform.isTV) && { paddingBottom: 64 },
+                modernChrome && { paddingBottom: 112 },
               ]}
               ListHeaderComponent={carouselsHeader}
               renderItem={renderGridItem}
@@ -3523,6 +3551,38 @@ function CloudScreen({ navigation, route }: any) {
             {t('NoXGP')}
           </Text>
         </View>
+      )}
+
+      {modernChrome && !isLimited && (
+        <BottomNavBar
+          tabs={[
+            {
+              key: 'home',
+              icon: 'home-variant',
+              label: t('NavHome'),
+              active: true,
+              onPress: () => {
+                if (filterCategory !== 'all') {
+                  handleBackToHome();
+                } else {
+                  scrollToTop();
+                }
+              },
+            },
+            {
+              key: 'search',
+              icon: 'magnify',
+              label: t('Search'),
+              onPress: handleOpenSearch,
+            },
+            {
+              key: 'settings',
+              icon: 'cog-outline',
+              label: t('Settings'),
+              onPress: () => navigation.navigate('Settings'),
+            },
+          ]}
+        />
       )}
 
       {/* Modals */}
@@ -3602,6 +3662,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
+  modernHidden: {
+    display: 'none',
+  },
   mainContainer: {
     flex: 1,
   },
@@ -3653,8 +3716,8 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    backgroundColor: '#161922',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#0A0A0A',
   },
   gamerpicImageLandscape: {
     width: 32,
@@ -3789,13 +3852,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   subscriptionDotFree: {
-    backgroundColor: '#8b949e',
+    backgroundColor: 'rgba(255, 255, 255, 0.55)',
   },
   subscriptionDotFreeLight: {
     backgroundColor: '#6B7280',
   },
   subscriptionBadgeFree: {
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
   },
   subscriptionBadgeFreeLight: {
     color: '#6B7280',
@@ -3811,7 +3874,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1 }],
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
     borderRadius: 17,
     height: 34,
     paddingHorizontal: 10,
@@ -3841,7 +3904,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1 }],
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -3890,13 +3953,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     transform: [{ scale: 1 }],
-    backgroundColor: '#161b26',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 22,
-    height: 44,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderRadius: 23,
+    height: 46,
     paddingHorizontal: 16,
-    marginTop: 12,
+    marginTop: 14,
     overflow: 'hidden',
   },
   searchBarButtonLandscape: {
@@ -3912,8 +3975,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   searchBarButtonPressed: {
-    backgroundColor: '#1e2535',
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
     transform: [{ scale: 0.985 }],
   },
   searchBarButtonPressedLight: {
@@ -3922,7 +3985,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
   },
   searchBarText: {
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 10,
@@ -4008,7 +4071,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   categoryCountText: {
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
     fontSize: 11,
     marginTop: 1,
   },
@@ -4025,7 +4088,7 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     transform: [{ scale: 1 }],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     marginRight: 8,
     justifyContent: 'center',
@@ -4056,12 +4119,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
   },
   countPillLight: {
     backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   countText: {
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -4095,7 +4160,7 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     fontSize: 12.5,
     fontWeight: '400',
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
     marginTop: 2,
   },
   sectionSubtitleLight: {
@@ -4103,7 +4168,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.2,
   },
@@ -4135,9 +4200,9 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   showAllCard: {
-    borderRadius: 10,
+    borderRadius: 14,
     transform: [{ scale: 1 }],
-    backgroundColor: '#161922',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(46, 213, 115, 0.3)',
     borderStyle: 'dashed',
@@ -4294,10 +4359,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   modalCard: {
-    backgroundColor: '#161922',
-    borderRadius: 16,
+    backgroundColor: 'rgba(10, 10, 10, 0.96)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     overflow: 'hidden',
   },
   modalCardLight: {
@@ -4355,7 +4420,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   modalRegionCode: {
-    color: '#8b949e',
+    color: 'rgba(255, 255, 255, 0.55)',
     fontSize: 11,
     marginTop: 2,
     lineHeight: 14,

@@ -79,8 +79,6 @@ const XStreamingGameCard: React.FC<Props> = ({
 }) => {
   const theme = useTheme();
   const isLight = !theme.dark;
-  const primaryColor = theme.colors.primary;
-  const playIconColor = theme.colors.onPrimary || '#FFFFFF';
 
   const isGamepadConnected = useGamepadConnectedState();
   const shouldHidePlay =
@@ -225,10 +223,9 @@ const XStreamingGameCard: React.FC<Props> = ({
               hitSlop={{top: 6, bottom: 6, left: 6, right: 6}}
               style={({pressed}) => [
                 styles.playButton,
-                {backgroundColor: primaryColor},
                 pressed && styles.actionButtonPressed,
               ]}>
-              <Icon source="play" size={22} color={playIconColor} />
+              <Icon source="play" size={18} color="#FFFFFF" />
             </Pressable>
           </View>
         )}
@@ -247,13 +244,13 @@ const styles = StyleSheet.create({
   cardPressable: {
     width: '100%',
     height: '100%',
-    borderRadius: 14,
+    borderRadius: 18,
     transform: [{scale: 1}],
     overflow: 'hidden',
-    backgroundColor: '#161922',
+    backgroundColor: '#0A0A0A',
     position: 'relative',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
   },
   cardPressableLight: {
     backgroundColor: '#E5E7EB',
@@ -281,8 +278,8 @@ const styles = StyleSheet.create({
   posterImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 12,
-    backgroundColor: '#1a1d26',
+    borderRadius: 17,
+    backgroundColor: '#0A0A0A',
   },
   posterImageLight: {
     backgroundColor: '#E5E7EB',
@@ -292,7 +289,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#181b24',
+    backgroundColor: '#0A0A0A',
   },
   fallbackContainerLight: {
     backgroundColor: '#F3F4F6',
@@ -317,10 +314,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#2ed573',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 2, // Optical center alignment for play triangle
@@ -330,6 +327,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
   actionButtonPressed: {
     opacity: 0.8,

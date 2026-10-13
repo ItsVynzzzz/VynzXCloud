@@ -88,7 +88,8 @@ import {
   DEFAULT_THEME_PRIMARY_COLOR,
   normalizeHexColor,
 } from './utils/themeColor';
-import XboxSymbolBackground from './components/XboxSymbolBackground';
+import AppBackground from './components/AppBackground';
+import BackgroundSettingsScreen from './pages/BackgroundSettings';
 
 import {useTranslation} from 'react-i18next';
 
@@ -120,13 +121,12 @@ const {LightTheme, DarkTheme} = adaptNavigationTheme({
 });
 
 const PAGE_BACKGROUND_LIGHT = '#FCFBFF';
-const PAGE_BACKGROUND_DARK = '#111320';
+const PAGE_BACKGROUND_DARK = '#000000';
 
 const withPageBackground = (ScreenComponent: any) => {
   const WrappedScreen = (props: any) => {
     const theme = useTheme();
     const isLight = !theme.dark;
-    const primaryColor = theme.colors.primary;
 
     return (
       <View
@@ -134,7 +134,7 @@ const withPageBackground = (ScreenComponent: any) => {
           styles.backgroundScreen,
           isLight ? styles.backgroundScreenLight : styles.backgroundScreenDark,
         ]}>
-        <XboxSymbolBackground isLight={isLight} primaryColor={primaryColor} />
+        <AppBackground isLight={isLight} />
         <View style={styles.backgroundContent}>
           <ScreenComponent {...props} />
         </View>
@@ -223,7 +223,7 @@ const AchivementDetailBackgroundScreen = withPageBackground(
   AchivementDetailScreen,
 );
 const LoginBackgroundScreen = withPageBackground(LoginScreen);
-const SettingsBackgroundScreen = withSolidPageBackground(SettingsScreen);
+const SettingsBackgroundScreen = withPageBackground(SettingsScreen);
 const SettingDetailBackgroundScreen = withPageBackground(SettingDetailScreen);
 const TitleDetailBackgroundScreen = withPageBackground(TitleDetailScreen);
 const DebugBackgroundScreen = withPageBackground(DebugScreen);
@@ -251,6 +251,9 @@ const ThanksBackgroundScreen = withPageBackground(ThanksScreen);
 const HistoryBackgroundScreen = withPageBackground(HistoryScreen);
 const ServerBackgroundScreen = withPageBackground(ServerScreen);
 const SearchBackgroundScreen = withPageBackground(SearchScreen);
+const BackgroundSettingsBackgroundScreen = withPageBackground(
+  BackgroundSettingsScreen,
+);
 
 function App() {
   const {t} = useTranslation();
@@ -532,6 +535,11 @@ function App() {
                     headerShown: false,
                     cardStyle: styles.transparentCard,
                   }}
+                />
+                <RootStack.Screen
+                  name="Background"
+                  component={BackgroundSettingsBackgroundScreen}
+                  options={{title: t('BgTitle')}}
                 />
                 <RootStack.Screen
                   name="Cloud"

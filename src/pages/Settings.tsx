@@ -219,6 +219,18 @@ function SettingsScreen({navigation, route}: any) {
       title: t('CatGeneral'),
       subtitle: t('CatGeneralDesc'),
       sections: [
+        {
+          key: 'appearance',
+          title: t('BgSection'),
+          rows: [
+            {
+              key: 'background',
+              title: t('BgTitle'),
+              description: t('BgDesc'),
+              onPress: () => navigation.navigate('Background'),
+            },
+          ],
+        },
         {key: 'bases', title: t('BasesSettings'), rows: fromMeta(bases)},
         {key: 'others', title: t('Others'), rows: fromMeta(others)},
       ],
