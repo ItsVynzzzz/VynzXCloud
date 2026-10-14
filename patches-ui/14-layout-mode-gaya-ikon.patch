@@ -1,0 +1,1126 @@
+diff --git a/android/app/src/main/res/drawable/control_button_ps_circle.xml b/android/app/src/main/res/drawable/control_button_ps_circle.xml
+new file mode 100644
+index 0000000..7b4c97c
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_circle.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M50,29 A21,21 0 1,1 50,71 A21,21 0 1,1 50,29 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFF7B8B"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_circle_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_circle_pressed.xml
+new file mode 100644
+index 0000000..9d5aa04
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_circle_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#66FF7B8B"
++      android:strokeColor="#FFFF7B8B"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M50,29 A21,21 0 1,1 50,71 A21,21 0 1,1 50,29 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_cross.xml b/android/app/src/main/res/drawable/control_button_ps_cross.xml
+new file mode 100644
+index 0000000..edd4364
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_cross.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M33,33 L67,67 M67,33 L33,67"
++      android:fillColor="#00000000"
++      android:strokeColor="#FF7DB4FF"
++      android:strokeWidth="6"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_cross_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_cross_pressed.xml
+new file mode 100644
+index 0000000..2ec894f
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_cross_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#667DB4FF"
++      android:strokeColor="#FF7DB4FF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M33,33 L67,67 M67,33 L33,67"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="6"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_home.xml b/android/app/src/main/res/drawable/control_button_ps_home.xml
+new file mode 100644
+index 0000000..be3780a
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_home.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="16dp"
++    android:height="16dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M27,68 V32 H41 C55,32 55,52 41,52 H27 M78,40 C73,31 60,34 60,42 C60,50 78,48 78,58 C78,67 64,69 59,61"
++      android:fillColor="#00000000"
++      android:strokeColor="#E6FFFFFF"
++      android:strokeWidth="5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_home_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_home_pressed.xml
+new file mode 100644
+index 0000000..98bf724
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_home_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="16dp"
++    android:height="16dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#66FACC15"
++      android:strokeColor="#FFFACC15"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M27,68 V32 H41 C55,32 55,52 41,52 H27 M78,40 C73,31 60,34 60,42 C60,50 78,48 78,58 C78,67 64,69 59,61"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_l1.xml b/android/app/src/main/res/drawable/control_button_ps_l1.xml
+new file mode 100644
+index 0000000..0a2042a
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_l1.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,35 V65 H60 M93,44 L102,35 V65 M92,65 H112"
++      android:fillColor="#00000000"
++      android:strokeColor="#E6FFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_l1_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_l1_pressed.xml
+new file mode 100644
+index 0000000..cffe604
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_l1_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#66FACC15"
++      android:strokeColor="#FFFACC15"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,35 V65 H60 M93,44 L102,35 V65 M92,65 H112"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_l2.xml b/android/app/src/main/res/drawable/control_button_ps_l2.xml
+new file mode 100644
+index 0000000..1366207
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_l2.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,35 V65 H60 M93,42 C93,31 113,31 113,43 C113,51 93,57 93,65 H114"
++      android:fillColor="#00000000"
++      android:strokeColor="#E6FFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_l2_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_l2_pressed.xml
+new file mode 100644
+index 0000000..0f693fb
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_l2_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#66FACC15"
++      android:strokeColor="#FFFACC15"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,35 V65 H60 M93,42 C93,31 113,31 113,43 C113,51 93,57 93,65 H114"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_r1.xml b/android/app/src/main/res/drawable/control_button_ps_r1.xml
+new file mode 100644
+index 0000000..a117dd3
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_r1.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,65 V35 H55 C67,35 67,50 55,50 H46 M55,50 L65,65 M93,44 L102,35 V65 M92,65 H112"
++      android:fillColor="#00000000"
++      android:strokeColor="#E6FFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_r1_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_r1_pressed.xml
+new file mode 100644
+index 0000000..5fa6da8
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_r1_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#66FACC15"
++      android:strokeColor="#FFFACC15"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,65 V35 H55 C67,35 67,50 55,50 H46 M55,50 L65,65 M93,44 L102,35 V65 M92,65 H112"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_r2.xml b/android/app/src/main/res/drawable/control_button_ps_r2.xml
+new file mode 100644
+index 0000000..a431248
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_r2.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,65 V35 H55 C67,35 67,50 55,50 H46 M55,50 L65,65 M93,42 C93,31 113,31 113,43 C113,51 93,57 93,65 H114"
++      android:fillColor="#00000000"
++      android:strokeColor="#E6FFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_r2_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_r2_pressed.xml
+new file mode 100644
+index 0000000..fa01bc6
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_r2_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="80dp"
++    android:height="50dp"
++    android:viewportWidth="160"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M40,14 H120 A36,36 0 0 1 120,86 H40 A36,36 0 0 1 40,14 Z"
++      android:fillColor="#66FACC15"
++      android:strokeColor="#FFFACC15"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M46,65 V35 H55 C67,35 67,50 55,50 H46 M55,50 L65,65 M93,42 C93,31 113,31 113,43 C113,51 93,57 93,65 H114"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="4.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_square.xml b/android/app/src/main/res/drawable/control_button_ps_square.xml
+new file mode 100644
+index 0000000..3e3d8c4
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_square.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M32,32 H68 V68 H32 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFF59AD3"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_square_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_square_pressed.xml
+new file mode 100644
+index 0000000..51f4706
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_square_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#66F59AD3"
++      android:strokeColor="#FFF59AD3"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M32,32 H68 V68 H32 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_triangle.xml b/android/app/src/main/res/drawable/control_button_ps_triangle.xml
+new file mode 100644
+index 0000000..c638132
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_triangle.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#14FFFFFF"
++      android:strokeColor="#B3FFFFFF"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M50,29 L71,66 H29 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FF5CE0A4"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/android/app/src/main/res/drawable/control_button_ps_triangle_pressed.xml b/android/app/src/main/res/drawable/control_button_ps_triangle_pressed.xml
+new file mode 100644
+index 0000000..bc1f9bb
+--- /dev/null
++++ b/android/app/src/main/res/drawable/control_button_ps_triangle_pressed.xml
+@@ -0,0 +1,20 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="200dp"
++    android:height="200dp"
++    android:viewportWidth="100"
++    android:viewportHeight="100">
++  <path
++      android:pathData="M50,3.5 A46.5,46.5 0 1,1 50,96.5 A46.5,46.5 0 1,1 50,3.5 Z"
++      android:fillColor="#665CE0A4"
++      android:strokeColor="#FF5CE0A4"
++      android:strokeWidth="3"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++  <path
++      android:pathData="M50,29 L71,66 H29 Z"
++      android:fillColor="#00000000"
++      android:strokeColor="#FFFFFFFF"
++      android:strokeWidth="5.5"
++      android:strokeLineCap="round"
++      android:strokeLineJoin="round"/>
++</vector>
+diff --git a/src/common/settings/vgamepad.ts b/src/common/settings/vgamepad.ts
+index 89cf9ab..9aad9c3 100644
+--- a/src/common/settings/vgamepad.ts
++++ b/src/common/settings/vgamepad.ts
+@@ -85,6 +85,16 @@ const vgamepad = [
+       {value: 0, text: t('Fixed')},
+     ],
+   },
++  {
++    name: 'virtual_gamepad_skin',
++    type: 'radio',
++    title: t('VSkin'),
++    description: t('VSkinDesc'),
++    data: [
++      {value: 'xbox', text: 'Xbox'},
++      {value: 'ps', text: 'PlayStation'},
++    ],
++  },
+ ];
+ 
+ export default vgamepad;
+diff --git a/src/components/CustomGamepad/Button.tsx b/src/components/CustomGamepad/Button.tsx
+index 7620753..78b8ba1 100644
+--- a/src/components/CustomGamepad/Button.tsx
++++ b/src/components/CustomGamepad/Button.tsx
+@@ -4,6 +4,7 @@ import ButtonView from '../ButtonView';
+ import {SvgXml} from 'react-native-svg';
+ import {useTheme} from 'react-native-paper';
+ import icons from '../../common/virtualgp';
++import {skinButtonName} from '../../utils/gamepadSkin';
+ import {VIRTUAL_MACRO_BUTTON_NAME} from '../../utils/virtualMacro';
+ import {colorizeMacroIconXml, normalizeHexColor} from '../../utils/themeColor';
+ 
+@@ -73,7 +74,7 @@ const GamepadButton: React.FC<Props> = ({
+     return (
+       <View style={style} pointerEvents="none">
+         <ButtonView
+-          buttonName={mapping[name]}
++          buttonName={skinButtonName(name, mapping[name])}
+           style={{width: width * scale, height: height * scale}}
+         />
+       </View>
+diff --git a/src/components/CustomGamepad/GamepadButton.tsx b/src/components/CustomGamepad/GamepadButton.tsx
+index f92e4d5..d4dd3ee 100644
+--- a/src/components/CustomGamepad/GamepadButton.tsx
++++ b/src/components/CustomGamepad/GamepadButton.tsx
+@@ -5,6 +5,7 @@ import {GestureDetector, Gesture} from 'react-native-gesture-handler';
+ import {SvgXml} from 'react-native-svg';
+ import {useTheme} from 'react-native-paper';
+ import icons from '../../common/virtualgp';
++import {skinButtonName} from '../../utils/gamepadSkin';
+ import {VIRTUAL_MACRO_BUTTON_NAME} from '../../utils/virtualMacro';
+ import {colorizeMacroIconXml, normalizeHexColor} from '../../utils/themeColor';
+ 
+@@ -75,7 +76,9 @@ const GamepadButton: React.FC<Props> = ({
+     height = 44;
+   }
+ 
+-  const mappedButtonName = mapping[name];
++  const mappedButtonName = mapping[name]
++    ? skinButtonName(name, mapping[name])
++    : undefined;
+   if (!mappedButtonName) {
+     const longPressGesture = Gesture.LongPress()
+       .onStart(() => {
+diff --git a/src/components/InGameMenu.tsx b/src/components/InGameMenu.tsx
+index 675f0ae..8809e3d 100644
+--- a/src/components/InGameMenu.tsx
++++ b/src/components/InGameMenu.tsx
+@@ -14,6 +14,7 @@ import {Icon, Text} from 'react-native-paper';
+ import {useTranslation} from 'react-i18next';
+ import {getSettings as getGamepadLayouts} from '../store/gamepadStore';
+ import {useGamepadNavigation} from '../utils/useGamepadNavigation';
++import {LAYOUT_MODES, modeFromProfile} from '../utils/layoutPresets';
+ 
+ type Props = {
+   visible: boolean;
+@@ -45,6 +46,9 @@ type Props = {
+   onSendText: () => void;
+   onAudioGain: (value: number) => void;
+   onChangeSetting: (partial: Record<string, any>) => void;
++  skin: string;
++  onApplyMode: (mode: string) => void;
++  onResetMode: () => void;
+   onEditLayout: () => void;
+   onSaveExit: () => void;
+   onDisconnect: () => void;
+@@ -63,6 +67,13 @@ const LINE = 'rgba(255, 255, 255, 0.16)';
+ const FILL = 'rgba(255, 255, 255, 0.06)';
+ const FILL_ON = 'rgba(255, 255, 255, 0.18)';
+ 
++const MODE_LABEL: Record<string, string> = {
++  normal: 'ModeNormal',
++  playstation: 'ModePlayStation',
++  fps: 'ModeFPS',
++  racing: 'ModeRacing',
++};
++
+ const clamp = (v: number, min: number, max: number) =>
+   Math.min(max, Math.max(min, v));
+ 
+@@ -521,6 +532,27 @@ const InGameMenu = (props: Props) => {
+     );
+ 
+     body.push(section('s_layout', t('IgmSectionLayout')));
++    body.push(
++      segment(
++        'mode',
++        t('IgmMode'),
++        LAYOUT_MODES.map(mode => ({value: mode, text: t(MODE_LABEL[mode])})),
++        modeFromProfile(props.profile) || '',
++        value => props.onApplyMode(value),
++      ),
++    );
++    body.push(
++      segment(
++        'skin',
++        t('IgmSkin'),
++        [
++          {value: 'xbox', text: 'Xbox'},
++          {value: 'ps', text: 'PlayStation'},
++        ],
++        props.skin,
++        value => props.onChangeSetting({virtual_gamepad_skin: value}),
++      ),
++    );
+     body.push(
+       toggleRow('macro', t('IgmMacro'), props.macroEnabled, () =>
+         props.onChangeSetting({virtual_macro_enabled: !props.macroEnabled}),
+@@ -532,7 +564,9 @@ const InGameMenu = (props: Props) => {
+         t('IgmProfile'),
+         [
+           {value: '', text: t('IgmProfileClassic')},
+-          ...profiles.map(name => ({
++          ...profiles
++            .filter(name => !modeFromProfile(name))
++            .map(name => ({
+             value: name,
+             text: name === 'LiveLayout' ? t('IgmProfileMain') : name,
+           })),
+@@ -547,6 +581,13 @@ const InGameMenu = (props: Props) => {
+         chevron: true,
+       }),
+     );
++    if (modeFromProfile(props.profile)) {
++      body.push(
++        row('reset_mode', 'restore', t('IgmResetMode'), props.onResetMode, {
++          desc: t('IgmResetModeDesc'),
++        }),
++      );
++    }
+     body.push(
+       row(
+         'reset_controls',
+diff --git a/src/components/VirtualGamepad.tsx b/src/components/VirtualGamepad.tsx
+index 0f8862a..dad6eaf 100644
+--- a/src/components/VirtualGamepad.tsx
++++ b/src/components/VirtualGamepad.tsx
+@@ -5,6 +5,7 @@ import ButtonView from './ButtonView';
+ import DPadView from './DPadView';
+ import GamepadButton from './GamepadButton';
+ import {getSettings} from '../store/settingStore';
++import {skinButtonName} from '../utils/gamepadSkin';
+ import {VIRTUAL_MACRO_BUTTON_NAME} from '../utils/virtualMacro';
+ 
+ type Props = {
+@@ -49,56 +50,56 @@ const VirtualGamepad: React.FC<Props> = ({
+     <View style={styles.wrap} pointerEvents="box-none">
+       <ButtonView
+         style={[styles.button, styles.lt, {opacity}, btnScale]}
+-        buttonName="control_button_lt"
++        buttonName={skinButtonName('LeftTrigger', 'control_button_lt')}
+         onPressIn={() => handlePressIn('LeftTrigger')}
+         onPressOut={() => handlePressOut('LeftTrigger')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.rt, {opacity}, btnScale]}
+-        buttonName="control_button_rt"
++        buttonName={skinButtonName('RightTrigger', 'control_button_rt')}
+         onPressIn={() => handlePressIn('RightTrigger')}
+         onPressOut={() => handlePressOut('RightTrigger')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.lb, {opacity}, btnScale]}
+-        buttonName="control_button_lb"
++        buttonName={skinButtonName('LeftShoulder', 'control_button_lb')}
+         onPressIn={() => handlePressIn('LeftShoulder')}
+         onPressOut={() => handlePressOut('LeftShoulder')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.rb, {opacity}, btnScale]}
+-        buttonName="control_button_rb"
++        buttonName={skinButtonName('RightShoulder', 'control_button_rb')}
+         onPressIn={() => handlePressIn('RightShoulder')}
+         onPressOut={() => handlePressOut('RightShoulder')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.a, {opacity}, btnScale]}
+-        buttonName="control_button_a"
++        buttonName={skinButtonName('A', 'control_button_a')}
+         onPressIn={() => handlePressIn('A')}
+         onPressOut={() => handlePressOut('A')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.b, {opacity}, btnScale]}
+-        buttonName="control_button_b"
++        buttonName={skinButtonName('B', 'control_button_b')}
+         onPressIn={() => handlePressIn('B')}
+         onPressOut={() => handlePressOut('B')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.x, {opacity}, btnScale]}
+-        buttonName="control_button_x"
++        buttonName={skinButtonName('X', 'control_button_x')}
+         onPressIn={() => handlePressIn('X')}
+         onPressOut={() => handlePressOut('X')}
+       />
+ 
+       <ButtonView
+         style={[styles.button, styles.y, {opacity}, btnScale]}
+-        buttonName="control_button_y"
++        buttonName={skinButtonName('Y', 'control_button_y')}
+         onPressIn={() => handlePressIn('Y')}
+         onPressOut={() => handlePressOut('Y')}
+       />
+@@ -136,7 +137,7 @@ const VirtualGamepad: React.FC<Props> = ({
+ 
+       <ButtonView
+         style={[styles.button, styles.nexus, {opacity}, btnScale]}
+-        buttonName="control_button_xbox"
++        buttonName={skinButtonName('Nexus', 'control_button_xbox')}
+         onPressIn={() => handlePressIn('Nexus')}
+         onPressOut={() => handlePressOut('Nexus')}
+       />
+diff --git a/src/components/VirtualGamepadEditor.tsx b/src/components/VirtualGamepadEditor.tsx
+index c63053e..421addc 100644
+--- a/src/components/VirtualGamepadEditor.tsx
++++ b/src/components/VirtualGamepadEditor.tsx
+@@ -24,6 +24,7 @@ import {
+   createDefaultVirtualDPadButton,
+   ensureVirtualDPadLayoutButton,
+ } from '../utils/virtualDPad';
++import {buildPresetLayout, modeFromProfile} from '../utils/layoutPresets';
+ 
+ export type ButtonConfig = {
+   name: string;
+@@ -103,34 +104,6 @@ const sizeOf = (button: ButtonConfig) => {
+   return {w: base.w * scale, h: base.h * scale};
+ };
+ 
+-const buildDefaultButtons = (): ButtonConfig[] => {
+-  const {width, height} = Dimensions.get('window');
+-  const nexusLeft = width * 0.5 - 20;
+-  const viewLeft = width * 0.5 - 100;
+-  const menuLeft = width * 0.5 + 60;
+-  const dpadSize = 160;
+-
+-  return [
+-    {name: 'LeftTrigger', x: 30, y: 40, scale: 1, show: true},
+-    {name: 'RightTrigger', x: width - 40, y: 40, scale: 1, show: true},
+-    {name: 'LeftShoulder', x: 30, y: 100, scale: 1, show: true},
+-    {name: 'RightShoulder', x: width - 40, y: 100, scale: 1, show: true},
+-    {name: 'A', x: width - 90, y: height - 60, scale: 1, show: true},
+-    {name: 'B', x: width - 40, y: height - 110, scale: 1, show: true},
+-    {name: 'X', x: width - 140, y: height - 110, scale: 1, show: true},
+-    {name: 'Y', x: width - 90, y: height - 160, scale: 1, show: true},
+-    {name: 'LeftThumb', x: 225, y: height - 80, scale: 1, show: true},
+-    {name: 'RightThumb', x: width - 235, y: height - 70, scale: 1, show: true},
+-    {name: 'View', x: viewLeft, y: height - 30, scale: 1, show: true},
+-    {name: 'Nexus', x: nexusLeft, y: height - 30, scale: 1, show: true},
+-    {name: 'Menu', x: menuLeft, y: height - 30, scale: 1, show: true},
+-    createDefaultVirtualDPadButton(15, height - dpadSize - 15, dpadSize, dpadSize),
+-    {name: 'LeftStick', x: 175, y: height - 205, show: true},
+-    {name: 'RightStick', x: width - 265, y: height - 195, show: true},
+-    createDefaultMacroLayoutButton(width, height),
+-  ];
+-};
+-
+ type ItemProps = {
+   button: ButtonConfig;
+   selected: boolean;
+@@ -310,7 +283,11 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
+     }
+     const {width, height} = Dimensions.get('window');
+     setBounds({w: width, h: height});
+-    const defaultList = buildDefaultButtons();
++    const defaultList = buildPresetLayout(
++      modeFromProfile(profileName) || 'normal',
++      width,
++      height,
++    );
+     setDefaults(defaultList);
+     const layout = getGamepadLayouts()[profileName];
+     let loaded: ButtonConfig[];
+diff --git a/src/languages/en.ts b/src/languages/en.ts
+index c1d1a1d..71931da 100644
+--- a/src/languages/en.ts
++++ b/src/languages/en.ts
+@@ -692,5 +692,15 @@ export default {
+     IgmSectionLayout: 'Layout',
+     IgmResetControls: 'Reset size & stick settings',
+     IgmResetControlsDesc: 'Restore size, dead zone, and sensitivity to defaults',
++    VSkin: 'Button icon style',
++    VSkinDesc: 'Virtual button icons: Xbox (A B X Y) or PlayStation (cross, circle, square, triangle)',
++    ModeNormal: 'Normal',
++    ModePlayStation: 'PlayStation',
++    ModeFPS: 'FPS',
++    ModeRacing: 'Racing',
++    IgmMode: 'Layout mode',
++    IgmSkin: 'Icon style',
++    IgmResetMode: 'Restore the layout of this mode',
++    IgmResetModeDesc: 'Buttons return to the default positions for this mode',
+   },
+ };
+diff --git a/src/languages/id.ts b/src/languages/id.ts
+index 950f772..ce9a66d 100644
+--- a/src/languages/id.ts
++++ b/src/languages/id.ts
+@@ -698,5 +698,15 @@ export default {
+     IgmSectionLayout: 'Tata letak',
+     IgmResetControls: 'Atur ulang ukuran & analog',
+     IgmResetControlsDesc: 'Kembalikan ukuran, zona mati, dan sensitivitas ke bawaan',
++    VSkin: 'Gaya ikon tombol',
++    VSkinDesc: 'Ikon tombol virtual: Xbox (A B X Y) atau PlayStation (silang, lingkaran, kotak, segitiga)',
++    ModeNormal: 'Normal',
++    ModePlayStation: 'PlayStation',
++    ModeFPS: 'FPS',
++    ModeRacing: 'Balap',
++    IgmMode: 'Mode tata letak',
++    IgmSkin: 'Gaya ikon',
++    IgmResetMode: 'Kembalikan tata letak mode ini',
++    IgmResetModeDesc: 'Posisi tombol kembali ke susunan bawaan mode ini',
+   },
+ };
+diff --git a/src/pages/NativeStream.tsx b/src/pages/NativeStream.tsx
+index fc7856f..9d138d5 100644
+--- a/src/pages/NativeStream.tsx
++++ b/src/pages/NativeStream.tsx
+@@ -12,6 +12,7 @@ import {
+   AppState,
+   StatusBar,
+   useWindowDimensions,
++  Dimensions,
+ } from 'react-native';
+ import {IconButton} from 'react-native-paper';
+ import {RTCView, MediaStream, RTCRtpReceiver} from 'react-native-webrtc';
+@@ -21,7 +22,10 @@ import {useSelector} from 'react-redux';
+ import XcloudApi from '../xCloud';
+ import WebApi from '../web';
+ import {getSettings, saveSettings} from '../store/settingStore';
+-import {saveSettings as saveGamepadLayout} from '../store/gamepadStore';
++import {
++  getSettings as getGamepadLayouts,
++  saveSettings as saveGamepadLayout,
++} from '../store/gamepadStore';
+ import {useTranslation} from 'react-i18next';
+ import webRTCClient from '../webrtc';
+ import {debugFactory} from '../utils/debug';
+@@ -34,6 +38,12 @@ import VirtualGamepadEditor, {
+ } from '../components/VirtualGamepadEditor';
+ import InGameMenu from '../components/InGameMenu';
+ import {shapeStick} from '../utils/stickCurve';
++import {
++  MODE_PROFILE,
++  MODE_SETTINGS,
++  buildPresetLayout,
++  modeFromProfile,
++} from '../utils/layoutPresets';
+ import PerfPanel from '../components/PerfPanel';
+ import RTCFsrView from '../components/RTCFsrView';
+ import NativeTouchOverlay from '../components/NativeTouchOverlay';
+@@ -2570,6 +2580,45 @@ export function NativeStreamScreenBase({
+     [],
+   );
+ 
++  // Memilih mode tata letak (Normal/PlayStation/FPS/Balap): membuat profilnya
++  // sekali (jika belum ada, supaya hasil edit pengguna tidak tertimpa), lalu
++  // mengaktifkannya bersama pengaturan analog yang cocok untuk mode itu.
++  const handleApplyMode = React.useCallback(
++    (mode: string) => {
++      const layoutMode = mode as any;
++      const profileName = MODE_PROFILE[layoutMode];
++      if (!profileName) {
++        return;
++      }
++      if (!getGamepadLayouts()[profileName]) {
++        const {width, height} = Dimensions.get('window');
++        saveGamepadLayout(
++          profileName,
++          buildPresetLayout(layoutMode, width, height),
++        );
++      }
++      handleMenuChangeSetting({
++        ...MODE_SETTINGS[layoutMode],
++        custom_virtual_gamepad: profileName,
++      });
++      setShowVirtualGamepad(true);
++    },
++    [handleMenuChangeSetting],
++  );
++
++  const handleResetMode = React.useCallback(() => {
++    const layoutMode = modeFromProfile(getActiveProfileName());
++    if (!layoutMode) {
++      return;
++    }
++    const {width, height} = Dimensions.get('window');
++    saveGamepadLayout(
++      MODE_PROFILE[layoutMode],
++      buildPresetLayout(layoutMode, width, height),
++    );
++    setGamepadLayoutVersion(prev => prev + 1);
++  }, [getActiveProfileName]);
++
+   const savePortraitGamepadLayout = React.useCallback(
+     (layout: PortraitGamepadControl[]) => {
+       const nextSettings = {
+@@ -3047,6 +3096,9 @@ export function NativeStreamScreenBase({
+         audioGain={audioGain}
+         opacity={settings.virtual_gamepad_opacity ?? 0.7}
+         joystick={settings.virtual_gamepad_joystick ?? 1}
++        skin={settings.virtual_gamepad_skin ?? 'xbox'}
++        onApplyMode={handleApplyMode}
++        onResetMode={handleResetMode}
+         vs={{
+           buttonScale: settings.virtual_button_scale ?? 1,
+           stickScale: settings.virtual_stick_scale ?? 1,
+diff --git a/src/store/settingStore.ts b/src/store/settingStore.ts
+index f3b4139..cff7722 100644
+--- a/src/store/settingStore.ts
++++ b/src/store/settingStore.ts
+@@ -68,6 +68,7 @@ export type Settings = {
+   virtual_stick_deadzone: number;
+   virtual_stick_sens_left: number;
+   virtual_stick_sens_right: number;
++  virtual_gamepad_skin: string;
+   custom_virtual_gamepad: string;
+   virtual_macro_enabled: boolean;
+   virtual_macro_loop_enabled: boolean;
+@@ -157,6 +158,7 @@ const defaultSettings: Settings = {
+   virtual_stick_deadzone: 0.1,
+   virtual_stick_sens_left: 1,
+   virtual_stick_sens_right: 1,
++  virtual_gamepad_skin: 'xbox',
+   virtual_macro_enabled: false,
+   virtual_macro_loop_enabled: false,
+   virtual_macro_loop_interval_ms: 500,
+diff --git a/src/utils/gamepadSkin.ts b/src/utils/gamepadSkin.ts
+new file mode 100644
+index 0000000..753b899
+--- /dev/null
++++ b/src/utils/gamepadSkin.ts
+@@ -0,0 +1,25 @@
++import {getSettings} from '../store/settingStore';
++
++// Nama gambar native untuk gaya PlayStation (lihat res/drawable/control_button_ps_*).
++const PS_BUTTONS: Record<string, string> = {
++  A: 'control_button_ps_cross',
++  B: 'control_button_ps_circle',
++  X: 'control_button_ps_square',
++  Y: 'control_button_ps_triangle',
++  LeftShoulder: 'control_button_ps_l1',
++  RightShoulder: 'control_button_ps_r1',
++  LeftTrigger: 'control_button_ps_l2',
++  RightTrigger: 'control_button_ps_r2',
++  Nexus: 'control_button_ps_home',
++};
++
++// Mengembalikan nama gambar sesuai gaya ikon yang dipilih. Tombol yang tidak
++// punya versi PlayStation (D-pad, View, Menu, L3/R3) tetap memakai gambar asli.
++export const skinButtonName = (logicalName: string, fallback: string) => {
++  try {
++    if (getSettings().virtual_gamepad_skin === 'ps') {
++      return PS_BUTTONS[logicalName] || fallback;
++    }
++  } catch {}
++  return fallback;
++};
+diff --git a/src/utils/layoutPresets.ts b/src/utils/layoutPresets.ts
+new file mode 100644
+index 0000000..9adc00c
+--- /dev/null
++++ b/src/utils/layoutPresets.ts
+@@ -0,0 +1,168 @@
++import {createDefaultVirtualDPadButton} from './virtualDPad';
++import {createDefaultMacroLayoutButton} from './virtualMacro';
++import {defaultLayoutButtons} from './defaultLayout';
++
++export type LayoutMode = 'normal' | 'playstation' | 'fps' | 'racing';
++
++export const LAYOUT_MODES: LayoutMode[] = [
++  'normal',
++  'playstation',
++  'fps',
++  'racing',
++];
++
++// Tiap mode disimpan sebagai profil tata letak sendiri, jadi tidak menimpa
++// profil buatan pengguna dan tetap bisa diatur lewat editor.
++export const MODE_PROFILE: Record<LayoutMode, string> = {
++  normal: 'Mode Normal',
++  playstation: 'Mode PlayStation',
++  fps: 'Mode FPS',
++  racing: 'Mode Balap',
++};
++
++export const modeFromProfile = (profile: string): LayoutMode | null => {
++  const found = LAYOUT_MODES.find(mode => MODE_PROFILE[mode] === profile);
++  return found || null;
++};
++
++// Pengaturan yang ikut diterapkan saat sebuah mode dipilih.
++export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
++  normal: {
++    virtual_gamepad_skin: 'xbox',
++    virtual_gamepad_joystick: 1,
++    virtual_stick_deadzone: 0.1,
++    virtual_stick_sens_left: 1,
++    virtual_stick_sens_right: 1,
++  },
++  playstation: {
++    virtual_gamepad_skin: 'ps',
++    virtual_gamepad_joystick: 1,
++    virtual_stick_deadzone: 0.1,
++    virtual_stick_sens_left: 1,
++    virtual_stick_sens_right: 1,
++  },
++  // Membidik dengan menyeret di separuh kanan layar; stick tidak ikut jari
++  // supaya bidikan tidak "lepas" saat jari ditarik jauh.
++  fps: {
++    virtual_gamepad_joystick: 2,
++    virtual_stick_deadzone: 0.05,
++    virtual_stick_sens_left: 1,
++    virtual_stick_sens_right: 1.3,
++  },
++  // Kemudi dengan analog kiri tetap di tempatnya.
++  racing: {
++    virtual_gamepad_joystick: 0,
++    virtual_stick_deadzone: 0.1,
++    virtual_stick_sens_left: 1,
++    virtual_stick_sens_right: 1,
++  },
++};
++
++const r = (v: number) => Math.round(v);
++
++const btn = (name: string, x: number, y: number, scale = 1) => ({
++  name,
++  x: r(x),
++  y: r(y),
++  scale,
++  show: true,
++});
++
++// Empat tombol ABXY berbentuk wajik di sekitar titik tengah (cx, cy).
++const faceCluster = (cx: number, cy: number, d: number, scale: number) => {
++  const h = 30 * scale;
++  return [
++    btn('A', cx - h, cy + d - h, scale),
++    btn('B', cx + d - h, cy - h, scale),
++    btn('X', cx - d - h, cy - h, scale),
++    btn('Y', cx - h, cy - d - h, scale),
++  ];
++};
++
++const dpad = (x: number, y: number, size: number) =>
++  createDefaultVirtualDPadButton(r(x), r(y), size, size);
++
++// Posisi analog dihitung dari titik tengahnya (kotak 120).
++const stick = (name: string, cx: number, cy: number) =>
++  btn(name, cx - 60, cy - 60);
++
++const playstation = (W: number, H: number): any[] => {
++  const m = 24;
++  return [
++    btn('LeftTrigger', m, 8),
++    btn('RightTrigger', W - m - 80, 8),
++    btn('LeftShoulder', m, 64),
++    btn('RightShoulder', W - m - 80, 64),
++    dpad(W * 0.035, H * 0.33, 120),
++    ...faceCluster(W - 134, H * 0.46, 46, 0.9),
++    stick('LeftStick', W * 0.32, H - 92),
++    stick('RightStick', Math.min(W * 0.68, W - 230), H - 92),
++    btn('LeftThumb', W * 0.32 - 25, H - 92 - 60 - 56),
++    btn('RightThumb', Math.min(W * 0.68, W - 230) - 25, H - 92 - 60 - 56),
++    btn('View', W / 2 - 90, 12),
++    btn('Menu', W / 2 + 50, 12),
++    btn('Nexus', W / 2 - 22, H * 0.7 - 22),
++    {...createDefaultMacroLayoutButton(W, H), x: r(W / 2 - 30), y: r(H * 0.3)},
++  ];
++};
++
++const fps = (W: number, H: number): any[] => {
++  const m = 24;
++  return [
++    btn('LeftTrigger', m, 8, 1.2),
++    btn('RightTrigger', W - m - 96, 8, 1.2),
++    btn('LeftShoulder', m, 78),
++    btn('RightShoulder', W - m - 80, 78),
++    dpad(W * 0.33, H - 110, 80),
++    ...faceCluster(W - 112, H * 0.6, 44, 0.9),
++    stick('LeftStick', W * 0.15, H - 88),
++    stick('RightStick', W * 0.62, H - 88),
++    btn('LeftThumb', W * 0.15 + 66, H - 88 - 25),
++    btn('RightThumb', W * 0.62 - 25, H - 88 - 60 - 56),
++    btn('View', W / 2 - 70, 10),
++    btn('Nexus', W / 2 - 22, 10),
++    btn('Menu', W / 2 + 30, 10),
++    {...createDefaultMacroLayoutButton(W, H), x: r(W / 2 - 30), y: r(H * 0.42)},
++  ];
++};
++
++const racing = (W: number, H: number): any[] => {
++  const m = 24;
++  return [
++    btn('LeftShoulder', m, 8),
++    btn('RightShoulder', W - m - 80, 8),
++    btn('LeftTrigger', W - 312, H - 118, 1.4),
++    btn('RightTrigger', W - m - 144, H - 138, 1.8),
++    dpad(m, H * 0.22, 110),
++    ...faceCluster(W - 112, H * 0.38, 40, 0.8),
++    stick('LeftStick', W * 0.17, H - 100),
++    stick('RightStick', W * 0.4, H - 100),
++    btn('LeftThumb', W * 0.17 + 60, H - 100 - 60 - 53),
++    btn('RightThumb', W * 0.4 - 25, H - 100 - 60 - 56),
++    btn('View', W / 2 - 70, 10),
++    btn('Nexus', W / 2 - 22, 10),
++    btn('Menu', W / 2 + 30, 10),
++    {...createDefaultMacroLayoutButton(W, H), x: r(W / 2 - 30), y: r(H * 0.4)},
++  ];
++};
++
++export const buildPresetLayout = (
++  mode: LayoutMode,
++  width: number,
++  height: number,
++): any[] => {
++  switch (mode) {
++    case 'playstation':
++      return playstation(width, height);
++    case 'fps':
++      return fps(width, height);
++    case 'racing':
++      return racing(width, height);
++    default:
++      return defaultLayoutButtons(
++        width,
++        height,
++        createDefaultMacroLayoutButton(width, height),
++      );
++  }
++};
