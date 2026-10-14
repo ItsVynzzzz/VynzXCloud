@@ -1,0 +1,191 @@
+diff --git a/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickView.java b/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickView.java
+index f201bd7..9e6ff43 100644
+--- a/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickView.java
++++ b/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickView.java
+@@ -30,6 +30,8 @@ public class AnalogStickView extends CustomView {
+     private Vector center;
+     private float homeFx = -1f;
+     private float homeFy = -1f;
++    // false = pusat stick tidak ikut bergeser saat jari ditarik melewati radius (mode "Pindah")
++    private boolean followFinger = true;
+     private Vector handlePosition = new Vector(0f, 0f);
+ 
+     public interface StateChangedCallback {
+@@ -126,6 +128,10 @@ public class AnalogStickView extends CustomView {
+         invalidate();
+     }
+ 
++    public void setFollowFinger(boolean followFinger) {
++        this.followFinger = followFinger;
++    }
++
+     private Vector getHome() {
+         if (homeFx < 0f || homeFy < 0f || getWidth() == 0 || getHeight() == 0) {
+             return null;
+@@ -229,7 +235,7 @@ public class AnalogStickView extends CustomView {
+ 
+         Vector dir = position.minus(center);
+         float length = dir.getLength();
+-        if (length > radius) {
++        if (length > radius && followFinger) {
+             // Pusat analog ikut bergeser ke arah jari, jadi jempol tidak perlu kembali jauh
+             center = center.plus(dir.divide(length).times(length - radius));
+             dir = position.minus(center);
+diff --git a/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickViewManager.java b/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickViewManager.java
+index 0ae1e9b..eb13740 100644
+--- a/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickViewManager.java
++++ b/android/app/src/main/java/com/xstreaming/touchcontrols/AnalogStickViewManager.java
+@@ -42,6 +42,11 @@ public class AnalogStickViewManager extends SimpleViewManager<AnalogStickView> {
+         view.setHomeY(homeY);
+     }
+ 
++    @ReactProp(name = "followFinger", defaultBoolean = true)
++    public void setFollowFinger(AnalogStickView view, boolean followFinger) {
++        view.setFollowFinger(followFinger);
++    }
++
+     @ReactProp(name = "handleRadius")
+     public void setHandleRadius(AnalogStickView view, float handleRadius) {
+         view.setHandleRadius(handleRadius);
+diff --git a/src/common/settings/vgamepad.ts b/src/common/settings/vgamepad.ts
+index 3378d52..a21b9e0 100644
+--- a/src/common/settings/vgamepad.ts
++++ b/src/common/settings/vgamepad.ts
+@@ -31,6 +31,7 @@ const vgamepad = [
+     tips: t('virtual_joystick_tips'),
+     data: [
+       {value: 1, text: t('Free')},
++      {value: 2, text: t('JoystickJump')},
+       {value: 0, text: t('Fixed')},
+     ],
+   },
+diff --git a/src/components/CustomVirtualGamepad.tsx b/src/components/CustomVirtualGamepad.tsx
+index 5de8156..98d623d 100644
+--- a/src/components/CustomVirtualGamepad.tsx
++++ b/src/components/CustomVirtualGamepad.tsx
+@@ -103,7 +103,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+           );
+         }
+         if (button.name === 'LeftStick') {
+-          if (localSettings.virtual_gamepad_joystick === 1) {
++          if (
++            localSettings.virtual_gamepad_joystick === 1 ||
++            localSettings.virtual_gamepad_joystick === 2
++          ) {
+             return (
+               <View
+                 key={button.name}
+@@ -123,6 +126,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+                   }}
+                   radius={90}
+                   handleRadius={48}
++                  followFinger={localSettings.virtual_gamepad_joystick !== 2}
+                   homeX={Math.min(
+                     Math.max((button.x + 60) / (clientW * 0.5), 0.05),
+                     0.95,
+@@ -153,7 +157,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+             );
+           }
+         } else if (button.name === 'RightStick') {
+-          if (localSettings.virtual_gamepad_joystick === 1) {
++          if (
++            localSettings.virtual_gamepad_joystick === 1 ||
++            localSettings.virtual_gamepad_joystick === 2
++          ) {
+             return (
+               <View
+                 key={button.name}
+@@ -173,6 +180,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+                   }}
+                   radius={90}
+                   handleRadius={48}
++                  followFinger={localSettings.virtual_gamepad_joystick !== 2}
+                   homeX={Math.min(
+                     Math.max(
+                       (button.x + 60 - clientW * 0.5) / (clientW * 0.5),
+diff --git a/src/components/InGameMenu.tsx b/src/components/InGameMenu.tsx
+index 6f44d37..ade5314 100644
+--- a/src/components/InGameMenu.tsx
++++ b/src/components/InGameMenu.tsx
+@@ -443,6 +443,7 @@ const InGameMenu = (props: Props) => {
+         t('IgmJoystick'),
+         [
+           {value: 1, text: t('Free')},
++          {value: 2, text: t('JoystickJump')},
+           {value: 0, text: t('Fixed')},
+         ],
+         props.joystick,
+diff --git a/src/components/VirtualGamepad.tsx b/src/components/VirtualGamepad.tsx
+index 41febb1..78c6880 100644
+--- a/src/components/VirtualGamepad.tsx
++++ b/src/components/VirtualGamepad.tsx
+@@ -156,7 +156,8 @@ const VirtualGamepad: React.FC<Props> = ({
+         />
+       )}
+ 
+-      {settings.virtual_gamepad_joystick === 1 ? (
++      {settings.virtual_gamepad_joystick === 1 ||
++      settings.virtual_gamepad_joystick === 2 ? (
+         <View
+           // eslint-disable-next-line react-native/no-inline-styles
+           style={{
+@@ -175,6 +176,7 @@ const VirtualGamepad: React.FC<Props> = ({
+             }}
+             radius={90}
+             handleRadius={48}
++            followFinger={settings.virtual_gamepad_joystick !== 2}
+             homeX={0.6}
+             homeY={0.77}
+             onStickChange={(data: any) => handleStickMove('left', data)}
+@@ -182,7 +184,8 @@ const VirtualGamepad: React.FC<Props> = ({
+         </View>
+       ) : null}
+ 
+-      {settings.virtual_gamepad_joystick === 1 ? (
++      {settings.virtual_gamepad_joystick === 1 ||
++      settings.virtual_gamepad_joystick === 2 ? (
+         <View
+           // eslint-disable-next-line react-native/no-inline-styles
+           style={{
+@@ -201,6 +204,7 @@ const VirtualGamepad: React.FC<Props> = ({
+             }}
+             radius={90}
+             handleRadius={48}
++            followFinger={settings.virtual_gamepad_joystick !== 2}
+             homeX={0.36}
+             homeY={0.775}
+             onStickChange={(data: any) => handleStickMove('right', data)}
+diff --git a/src/languages/en.ts b/src/languages/en.ts
+index 15e436c..b9389a5 100644
+--- a/src/languages/en.ts
++++ b/src/languages/en.ts
+@@ -270,9 +270,10 @@ export default {
+     'Virtual Opacity': 'Virtual button opacity',
+     virtual_joystick_title: 'Virtual joystick layout',
+     virtual_joystick_desc:
+-      'Set the virtual joystick layout to fixed or free mode',
++      'Set the virtual joystick mode: free (follows your finger), jump (moves to where you touch), or fixed',
+     virtual_joystick_tips:
+-      'In free mode, blank areas on the left/right side of the screen can operate the left/right sticks respectively.',
++      'In free mode, blank areas on the left/right side of the screen can operate the left/right sticks respectively. In jump mode, the stick does not follow your finger when you pull far; it jumps to where you touch if you press outside the stick.',
++    JoystickJump: 'Jump',
+     Fixed: 'Fixed',
+     Free: 'Free',
+     On: 'On',
+diff --git a/src/languages/id.ts b/src/languages/id.ts
+index 713a8dd..8b4d702 100644
+--- a/src/languages/id.ts
++++ b/src/languages/id.ts
+@@ -272,9 +272,10 @@ export default {
+     'Virtual Opacity': 'Transparansi tombol virtual',
+     virtual_joystick_title: 'Tata letak joystick virtual',
+     virtual_joystick_desc:
+-      'Atur mode joystick virtual ke posisi tetap (Fixed) atau posisi dinamis bebas (Free)',
++      'Atur mode joystick virtual: bebas mengikuti jari (Bebas), pindah ke titik sentuh (Pindah), atau posisi tetap (Tetap)',
+     virtual_joystick_tips:
+-      'Pada mode bebas, area kosong di separuh kiri/kanan layar dapat digunakan langsung untuk menggerakkan stick kiri/kanan secara leluasa.',
++      'Pada mode bebas, area kosong di separuh kiri/kanan layar dapat digunakan langsung untuk menggerakkan stick kiri/kanan secara leluasa. Pada mode pindah, stick tidak ikut bergeser saat jari ditarik jauh, tetapi langsung berpindah ke titik sentuh jika kamu menekan di luar analog.',
++    JoystickJump: 'Pindah',
+     Fixed: 'Tetap',
+     Free: 'Bebas',
+     On: 'Aktif',
