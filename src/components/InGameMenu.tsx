@@ -443,6 +443,7 @@ const InGameMenu = (props: Props) => {
         t('IgmJoystick'),
         [
           {value: 1, text: t('Free')},
+          {value: 2, text: t('JoystickJump')},
           {value: 0, text: t('Fixed')},
         ],
         props.joystick,

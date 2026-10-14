@@ -156,7 +156,8 @@ const VirtualGamepad: React.FC<Props> = ({
         />
       )}
 
-      {settings.virtual_gamepad_joystick === 1 ? (
+      {settings.virtual_gamepad_joystick === 1 ||
+      settings.virtual_gamepad_joystick === 2 ? (
         <View
           // eslint-disable-next-line react-native/no-inline-styles
           style={{
@@ -175,6 +176,7 @@ const VirtualGamepad: React.FC<Props> = ({
             }}
             radius={90}
             handleRadius={48}
+            followFinger={settings.virtual_gamepad_joystick !== 2}
             homeX={0.6}
             homeY={0.77}
             onStickChange={(data: any) => handleStickMove('left', data)}
@@ -182,7 +184,8 @@ const VirtualGamepad: React.FC<Props> = ({
         </View>
       ) : null}
 
-      {settings.virtual_gamepad_joystick === 1 ? (
+      {settings.virtual_gamepad_joystick === 1 ||
+      settings.virtual_gamepad_joystick === 2 ? (
         <View
           // eslint-disable-next-line react-native/no-inline-styles
           style={{
@@ -201,6 +204,7 @@ const VirtualGamepad: React.FC<Props> = ({
             }}
             radius={90}
             handleRadius={48}
+            followFinger={settings.virtual_gamepad_joystick !== 2}
             homeX={0.36}
             homeY={0.775}
             onStickChange={(data: any) => handleStickMove('right', data)}

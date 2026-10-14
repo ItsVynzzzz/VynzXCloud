@@ -30,6 +30,8 @@ public class AnalogStickView extends CustomView {
     private Vector center;
     private float homeFx = -1f;
     private float homeFy = -1f;
+    // false = pusat stick tidak ikut bergeser saat jari ditarik melewati radius (mode "Pindah")
+    private boolean followFinger = true;
     private Vector handlePosition = new Vector(0f, 0f);
 
     public interface StateChangedCallback {
@@ -124,6 +126,10 @@ public class AnalogStickView extends CustomView {
     public void setHomeY(float fy) {
         this.homeFy = fy;
         invalidate();
+    }
+
+    public void setFollowFinger(boolean followFinger) {
+        this.followFinger = followFinger;
     }
 
     private Vector getHome() {
@@ -229,7 +235,7 @@ public class AnalogStickView extends CustomView {
 
         Vector dir = position.minus(center);
         float length = dir.getLength();
-        if (length > radius) {
+        if (length > radius && followFinger) {
             // Pusat analog ikut bergeser ke arah jari, jadi jempol tidak perlu kembali jauh
             center = center.plus(dir.divide(length).times(length - radius));
             dir = position.minus(center);

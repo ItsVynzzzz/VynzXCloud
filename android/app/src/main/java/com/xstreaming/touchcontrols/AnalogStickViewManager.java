@@ -42,6 +42,11 @@ public class AnalogStickViewManager extends SimpleViewManager<AnalogStickView> {
         view.setHomeY(homeY);
     }
 
+    @ReactProp(name = "followFinger", defaultBoolean = true)
+    public void setFollowFinger(AnalogStickView view, boolean followFinger) {
+        view.setFollowFinger(followFinger);
+    }
+
     @ReactProp(name = "handleRadius")
     public void setHandleRadius(AnalogStickView view, float handleRadius) {
         view.setHandleRadius(handleRadius);

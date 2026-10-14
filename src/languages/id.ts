@@ -272,9 +272,10 @@ export default {
     'Virtual Opacity': 'Transparansi tombol virtual',
     virtual_joystick_title: 'Tata letak joystick virtual',
     virtual_joystick_desc:
-      'Atur mode joystick virtual ke posisi tetap (Fixed) atau posisi dinamis bebas (Free)',
+      'Atur mode joystick virtual: bebas mengikuti jari (Bebas), pindah ke titik sentuh (Pindah), atau posisi tetap (Tetap)',
     virtual_joystick_tips:
-      'Pada mode bebas, area kosong di separuh kiri/kanan layar dapat digunakan langsung untuk menggerakkan stick kiri/kanan secara leluasa.',
+      'Pada mode bebas, area kosong di separuh kiri/kanan layar dapat digunakan langsung untuk menggerakkan stick kiri/kanan secara leluasa. Pada mode pindah, stick tidak ikut bergeser saat jari ditarik jauh, tetapi langsung berpindah ke titik sentuh jika kamu menekan di luar analog.',
+    JoystickJump: 'Pindah',
     Fixed: 'Tetap',
     Free: 'Bebas',
     On: 'Aktif',

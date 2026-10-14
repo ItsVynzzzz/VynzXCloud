@@ -270,9 +270,10 @@ export default {
     'Virtual Opacity': 'Virtual button opacity',
     virtual_joystick_title: 'Virtual joystick layout',
     virtual_joystick_desc:
-      'Set the virtual joystick layout to fixed or free mode',
+      'Set the virtual joystick mode: free (follows your finger), jump (moves to where you touch), or fixed',
     virtual_joystick_tips:
-      'In free mode, blank areas on the left/right side of the screen can operate the left/right sticks respectively.',
+      'In free mode, blank areas on the left/right side of the screen can operate the left/right sticks respectively. In jump mode, the stick does not follow your finger when you pull far; it jumps to where you touch if you press outside the stick.',
+    JoystickJump: 'Jump',
     Fixed: 'Fixed',
     Free: 'Free',
     On: 'On',

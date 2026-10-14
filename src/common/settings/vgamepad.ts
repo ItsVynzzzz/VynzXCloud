@@ -31,6 +31,7 @@ const vgamepad = [
     tips: t('virtual_joystick_tips'),
     data: [
       {value: 1, text: t('Free')},
+      {value: 2, text: t('JoystickJump')},
       {value: 0, text: t('Fixed')},
     ],
   },

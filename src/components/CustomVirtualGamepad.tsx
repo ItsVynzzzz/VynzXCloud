@@ -103,7 +103,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
           );
         }
         if (button.name === 'LeftStick') {
-          if (localSettings.virtual_gamepad_joystick === 1) {
+          if (
+            localSettings.virtual_gamepad_joystick === 1 ||
+            localSettings.virtual_gamepad_joystick === 2
+          ) {
             return (
               <View
                 key={button.name}
@@ -123,6 +126,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   }}
                   radius={90}
                   handleRadius={48}
+                  followFinger={localSettings.virtual_gamepad_joystick !== 2}
                   homeX={Math.min(
                     Math.max((button.x + 60) / (clientW * 0.5), 0.05),
                     0.95,
@@ -153,7 +157,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
             );
           }
         } else if (button.name === 'RightStick') {
-          if (localSettings.virtual_gamepad_joystick === 1) {
+          if (
+            localSettings.virtual_gamepad_joystick === 1 ||
+            localSettings.virtual_gamepad_joystick === 2
+          ) {
             return (
               <View
                 key={button.name}
@@ -173,6 +180,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   }}
                   radius={90}
                   handleRadius={48}
+                  followFinger={localSettings.virtual_gamepad_joystick !== 2}
                   homeX={Math.min(
                     Math.max(
                       (button.x + 60 - clientW * 0.5) / (clientW * 0.5),
