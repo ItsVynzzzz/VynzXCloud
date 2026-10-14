@@ -21,6 +21,11 @@ const VirtualGamepad: React.FC<Props> = ({
   onStickMove,
 }) => {
   const settings = getSettings();
+  const buttonScale = settings.virtual_button_scale ?? 1;
+  const stickScale = settings.virtual_stick_scale ?? 1;
+  const deadZone = settings.virtual_stick_deadzone ?? 0.1;
+  const btnScale = {transform: [{scale: buttonScale}]};
+  const stickBoxScale = {transform: [{scale: stickScale}]};
 
   const handlePressIn = (name: string | string[]) => {
     onPressIn && onPressIn(name);
@@ -43,56 +48,56 @@ const VirtualGamepad: React.FC<Props> = ({
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       <ButtonView
-        style={[styles.button, styles.lt, {opacity}]}
+        style={[styles.button, styles.lt, {opacity}, btnScale]}
         buttonName="control_button_lt"
         onPressIn={() => handlePressIn('LeftTrigger')}
         onPressOut={() => handlePressOut('LeftTrigger')}
       />
 
       <ButtonView
-        style={[styles.button, styles.rt, {opacity}]}
+        style={[styles.button, styles.rt, {opacity}, btnScale]}
         buttonName="control_button_rt"
         onPressIn={() => handlePressIn('RightTrigger')}
         onPressOut={() => handlePressOut('RightTrigger')}
       />
 
       <ButtonView
-        style={[styles.button, styles.lb, {opacity}]}
+        style={[styles.button, styles.lb, {opacity}, btnScale]}
         buttonName="control_button_lb"
         onPressIn={() => handlePressIn('LeftShoulder')}
         onPressOut={() => handlePressOut('LeftShoulder')}
       />
 
       <ButtonView
-        style={[styles.button, styles.rb, {opacity}]}
+        style={[styles.button, styles.rb, {opacity}, btnScale]}
         buttonName="control_button_rb"
         onPressIn={() => handlePressIn('RightShoulder')}
         onPressOut={() => handlePressOut('RightShoulder')}
       />
 
       <ButtonView
-        style={[styles.button, styles.a, {opacity}]}
+        style={[styles.button, styles.a, {opacity}, btnScale]}
         buttonName="control_button_a"
         onPressIn={() => handlePressIn('A')}
         onPressOut={() => handlePressOut('A')}
       />
 
       <ButtonView
-        style={[styles.button, styles.b, {opacity}]}
+        style={[styles.button, styles.b, {opacity}, btnScale]}
         buttonName="control_button_b"
         onPressIn={() => handlePressIn('B')}
         onPressOut={() => handlePressOut('B')}
       />
 
       <ButtonView
-        style={[styles.button, styles.x, {opacity}]}
+        style={[styles.button, styles.x, {opacity}, btnScale]}
         buttonName="control_button_x"
         onPressIn={() => handlePressIn('X')}
         onPressOut={() => handlePressOut('X')}
       />
 
       <ButtonView
-        style={[styles.button, styles.y, {opacity}]}
+        style={[styles.button, styles.y, {opacity}, btnScale]}
         buttonName="control_button_y"
         onPressIn={() => handlePressIn('Y')}
         onPressOut={() => handlePressOut('Y')}
@@ -103,6 +108,7 @@ const VirtualGamepad: React.FC<Props> = ({
           styles.button,
           styles.l3,
           {opacity},
+          btnScale,
         ]}
         buttonName="control_button_left_joystick_down"
         onPressIn={() => handlePressIn('LeftThumb')}
@@ -114,6 +120,7 @@ const VirtualGamepad: React.FC<Props> = ({
           styles.button,
           styles.r3,
           {opacity},
+          btnScale,
         ]}
         buttonName="control_button_right_joystick_down"
         onPressIn={() => handlePressIn('RightThumb')}
@@ -121,28 +128,28 @@ const VirtualGamepad: React.FC<Props> = ({
       />
 
       <ButtonView
-        style={[styles.button, styles.view, {opacity}]}
+        style={[styles.button, styles.view, {opacity}, btnScale]}
         buttonName="control_button_view"
         onPressIn={() => handlePressIn('View')}
         onPressOut={() => handlePressOut('View')}
       />
 
       <ButtonView
-        style={[styles.button, styles.nexus, {opacity}]}
+        style={[styles.button, styles.nexus, {opacity}, btnScale]}
         buttonName="control_button_xbox"
         onPressIn={() => handlePressIn('Nexus')}
         onPressOut={() => handlePressOut('Nexus')}
       />
 
       <ButtonView
-        style={[styles.button, styles.menu, {opacity}]}
+        style={[styles.button, styles.menu, {opacity}, btnScale]}
         buttonName="control_button_menu"
         onPressIn={() => handlePressIn('Menu')}
         onPressOut={() => handlePressOut('Menu')}
       />
 
       <DPadView
-        style={[styles.dpad, {opacity}]}
+        style={[styles.dpad, {opacity}, btnScale]}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       />
@@ -150,7 +157,7 @@ const VirtualGamepad: React.FC<Props> = ({
       {settings.virtual_macro_enabled && (
         <GamepadButton
           name={VIRTUAL_MACRO_BUTTON_NAME}
-          style={[styles.button, styles.macro, {opacity}]}
+          style={[styles.button, styles.macro, {opacity}, btnScale]}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         />
@@ -174,9 +181,10 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={90}
-            handleRadius={48}
+            radius={90 * stickScale}
+            handleRadius={48 * stickScale}
             followFinger={settings.virtual_gamepad_joystick !== 2}
+            deadZone={deadZone}
             homeX={0.6}
             homeY={0.77}
             onStickChange={(data: any) => handleStickMove('left', data)}
@@ -202,9 +210,10 @@ const VirtualGamepad: React.FC<Props> = ({
               width: width * 0.5,
               height: height,
             }}
-            radius={90}
-            handleRadius={48}
+            radius={90 * stickScale}
+            handleRadius={48 * stickScale}
             followFinger={settings.virtual_gamepad_joystick !== 2}
+            deadZone={deadZone}
             homeX={0.36}
             homeY={0.775}
             onStickChange={(data: any) => handleStickMove('right', data)}
@@ -213,22 +222,24 @@ const VirtualGamepad: React.FC<Props> = ({
       ) : null}
 
       {settings.virtual_gamepad_joystick === 0 ? (
-        <View style={[styles.button, styles.leftJs, {opacity}]}>
+        <View style={[styles.button, styles.leftJs, {opacity}, stickBoxScale]}>
           <AnalogStick
             style={styles.analogStick}
             radius={140}
             handleRadius={80}
+            deadZone={deadZone}
             onStickChange={(data: any) => handleStickMove('left', data)}
           />
         </View>
       ) : null}
 
       {settings.virtual_gamepad_joystick === 0 ? (
-        <View style={[styles.button, styles.rightJs, {opacity}]}>
+        <View style={[styles.button, styles.rightJs, {opacity}, stickBoxScale]}>
           <AnalogStick
             style={styles.analogStick}
             radius={150}
             handleRadius={100}
+            deadZone={deadZone}
             onStickChange={(data: any) => handleStickMove('right', data)}
           />
         </View>

@@ -18,6 +18,7 @@ import com.xstreaming.R;
 public class AnalogStickView extends CustomView {
 
     private static final float DEAD_ZONE = 0.10f;
+    private float deadZone = DEAD_ZONE;
     private float radius = 100f;
     private float handleRadius = 30f;
     private Drawable drawableBase;
@@ -126,6 +127,10 @@ public class AnalogStickView extends CustomView {
     public void setHomeY(float fy) {
         this.homeFy = fy;
         invalidate();
+    }
+
+    public void setDeadZone(float deadZone) {
+        this.deadZone = Math.max(0f, Math.min(deadZone, 0.9f));
     }
 
     public void setFollowFinger(boolean followFinger) {
@@ -243,7 +248,7 @@ public class AnalogStickView extends CustomView {
         }
         if (length > 0) {
             float rawStrength = length > radius ? 1.0f : length / radius;
-            float strength = rawStrength <= DEAD_ZONE ? 0f : (rawStrength - DEAD_ZONE) / (1f - DEAD_ZONE);
+            float strength = rawStrength <= deadZone ? 0f : (rawStrength - deadZone) / (1f - deadZone);
             Vector dirNormalized = dir.divide(length);
             handlePosition = dirNormalized.times(rawStrength);
             Vector dirBoxNormalized;

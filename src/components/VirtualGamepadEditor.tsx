@@ -219,9 +219,15 @@ const EditorItem = React.memo(
                 ? styles.ringHidden
                 : styles.ringIdle,
             {borderRadius: ringRadius},
+            round && {transform: [{scale: button.scale ?? 1}]},
           ]}
         />
-        <View pointerEvents="none" style={styles.preview}>
+        <View
+          pointerEvents="none"
+          style={[
+            styles.preview,
+            round && {transform: [{scale: button.scale ?? 1}]},
+          ]}>
           {round ? (
             <View
               style={[
@@ -366,7 +372,8 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
       return;
     }
     const next = Math.round(((current.scale ?? 1) + delta) * 10) / 10;
-    const clamped = Math.min(MAX_SCALE, Math.max(MIN_SCALE, next));
+    const maxScale = isStick(current.name) ? 2 : MAX_SCALE;
+    const clamped = Math.min(maxScale, Math.max(MIN_SCALE, next));
     setButtons(prev =>
       prev.map(button =>
         button.name === current.name ? {...button, scale: clamped} : button,
@@ -465,27 +472,23 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
                   </Text>
                 </View>
 
-                {isStick(current.name) ? (
-                  <Text style={styles.fixedText}>{t('EdSizeFixed')}</Text>
-                ) : (
-                  <View style={styles.stepper}>
-                    <Pressable
-                      onPress={() => changeScale(-SCALE_STEP)}
-                      accessibilityLabel={t('Size')}
-                      style={styles.stepBtn}>
-                      <Icon source="minus" size={20} color="#FFFFFF" />
-                    </Pressable>
-                    <Text style={styles.stepValue}>
-                      {(current.scale ?? 1).toFixed(1)}×
-                    </Text>
-                    <Pressable
-                      onPress={() => changeScale(SCALE_STEP)}
-                      accessibilityLabel={t('Size')}
-                      style={styles.stepBtn}>
-                      <Icon source="plus" size={20} color="#FFFFFF" />
-                    </Pressable>
-                  </View>
-                )}
+                <View style={styles.stepper}>
+                  <Pressable
+                    onPress={() => changeScale(-SCALE_STEP)}
+                    accessibilityLabel={t('Size')}
+                    style={styles.stepBtn}>
+                    <Icon source="minus" size={20} color="#FFFFFF" />
+                  </Pressable>
+                  <Text style={styles.stepValue}>
+                    {(current.scale ?? 1).toFixed(1)}×
+                  </Text>
+                  <Pressable
+                    onPress={() => changeScale(SCALE_STEP)}
+                    accessibilityLabel={t('Size')}
+                    style={styles.stepBtn}>
+                    <Icon source="plus" size={20} color="#FFFFFF" />
+                  </Pressable>
+                </View>
 
                 <Pressable onPress={toggleShow} style={styles.eyeBtn}>
                   <Icon

@@ -25,6 +25,13 @@ type Props = {
   micOn: boolean;
   audioGain: number;
   opacity: number;
+  vs: {
+    buttonScale: number;
+    stickScale: number;
+    deadzone: number;
+    sensLeft: number;
+    sensRight: number;
+  };
   joystick: number;
   macroEnabled: boolean;
   profile: string;
@@ -425,6 +432,21 @@ const InGameMenu = (props: Props) => {
       row('disconnect', 'logout', t('Disconnect'), props.onDisconnect, {danger: true}),
     );
   } else {
+    const vs = props.vs;
+    const adjust = (
+      key: string,
+      current: number,
+      delta: number,
+      min: number,
+      max: number,
+    ) => {
+      const next = clamp(Math.round((current + delta) * 100) / 100, min, max);
+      props.onChangeSetting({[key]: next});
+    };
+    const pct = (value: number) => `${Math.round(value * 100)}%`;
+    const mult = (value: number) => `${value.toFixed(1)}\u00d7`;
+
+    body.push(section('s_display', t('IgmSectionDisplay')));
     body.push(
       toggleRow('show_pad', t('IgmShowPad'), props.showVirtualGamepad, props.onToggleGamepad),
     );
@@ -432,11 +454,22 @@ const InGameMenu = (props: Props) => {
       stepper(
         'opacity',
         t('IgmOpacity'),
-        `${Math.round(props.opacity * 100)}%`,
-        () => props.onChangeSetting({virtual_gamepad_opacity: clamp(Math.round((props.opacity - 0.1) * 10) / 10, 0.1, 1)}),
-        () => props.onChangeSetting({virtual_gamepad_opacity: clamp(Math.round((props.opacity + 0.1) * 10) / 10, 0.1, 1)}),
+        pct(props.opacity),
+        () => adjust('virtual_gamepad_opacity', props.opacity, -0.1, 0.1, 1),
+        () => adjust('virtual_gamepad_opacity', props.opacity, 0.1, 0.1, 1),
       ),
     );
+    body.push(
+      stepper(
+        'button_scale',
+        t('VButtonScale'),
+        pct(vs.buttonScale),
+        () => adjust('virtual_button_scale', vs.buttonScale, -0.1, 0.6, 1.6),
+        () => adjust('virtual_button_scale', vs.buttonScale, 0.1, 0.6, 1.6),
+      ),
+    );
+
+    body.push(section('s_stick', t('IgmSectionStick')));
     body.push(
       segment(
         'joystick',
@@ -450,6 +483,44 @@ const InGameMenu = (props: Props) => {
         value => props.onChangeSetting({virtual_gamepad_joystick: value}),
       ),
     );
+    body.push(
+      stepper(
+        'stick_scale',
+        t('VStickScale'),
+        pct(vs.stickScale),
+        () => adjust('virtual_stick_scale', vs.stickScale, -0.1, 0.6, 1.6),
+        () => adjust('virtual_stick_scale', vs.stickScale, 0.1, 0.6, 1.6),
+      ),
+    );
+    body.push(
+      stepper(
+        'deadzone',
+        t('VDeadzone'),
+        pct(vs.deadzone),
+        () => adjust('virtual_stick_deadzone', vs.deadzone, -0.05, 0, 0.4),
+        () => adjust('virtual_stick_deadzone', vs.deadzone, 0.05, 0, 0.4),
+      ),
+    );
+    body.push(
+      stepper(
+        'sens_left',
+        t('VSensLeft'),
+        mult(vs.sensLeft),
+        () => adjust('virtual_stick_sens_left', vs.sensLeft, -0.1, 0.5, 2),
+        () => adjust('virtual_stick_sens_left', vs.sensLeft, 0.1, 0.5, 2),
+      ),
+    );
+    body.push(
+      stepper(
+        'sens_right',
+        t('VSensRight'),
+        mult(vs.sensRight),
+        () => adjust('virtual_stick_sens_right', vs.sensRight, -0.1, 0.5, 2),
+        () => adjust('virtual_stick_sens_right', vs.sensRight, 0.1, 0.5, 2),
+      ),
+    );
+
+    body.push(section('s_layout', t('IgmSectionLayout')));
     body.push(
       toggleRow('macro', t('IgmMacro'), props.macroEnabled, () =>
         props.onChangeSetting({virtual_macro_enabled: !props.macroEnabled}),
@@ -475,6 +546,22 @@ const InGameMenu = (props: Props) => {
         desc: t('IgmEditLayoutDesc'),
         chevron: true,
       }),
+    );
+    body.push(
+      row(
+        'reset_controls',
+        'restore',
+        t('IgmResetControls'),
+        () =>
+          props.onChangeSetting({
+            virtual_button_scale: 1,
+            virtual_stick_scale: 1,
+            virtual_stick_deadzone: 0.1,
+            virtual_stick_sens_left: 1,
+            virtual_stick_sens_right: 1,
+          }),
+        {desc: t('IgmResetControlsDesc')},
+      ),
     );
   }
 

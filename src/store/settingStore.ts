@@ -63,6 +63,11 @@ export type Settings = {
   show_virtual_gamead: boolean;
   virtual_gamepad_opacity: number;
   virtual_gamepad_joystick: number;
+  virtual_button_scale: number;
+  virtual_stick_scale: number;
+  virtual_stick_deadzone: number;
+  virtual_stick_sens_left: number;
+  virtual_stick_sens_right: number;
   custom_virtual_gamepad: string;
   virtual_macro_enabled: boolean;
   virtual_macro_loop_enabled: boolean;
@@ -147,6 +152,11 @@ const defaultSettings: Settings = {
   virtual_gamepad_opacity: 0.7,
   custom_virtual_gamepad: '',
   virtual_gamepad_joystick: 1,
+  virtual_button_scale: 1,
+  virtual_stick_scale: 1,
+  virtual_stick_deadzone: 0.1,
+  virtual_stick_sens_left: 1,
+  virtual_stick_sens_right: 1,
   virtual_macro_enabled: false,
   virtual_macro_loop_enabled: false,
   virtual_macro_loop_interval_ms: 500,

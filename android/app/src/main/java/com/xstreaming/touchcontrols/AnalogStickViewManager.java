@@ -42,6 +42,11 @@ public class AnalogStickViewManager extends SimpleViewManager<AnalogStickView> {
         view.setHomeY(homeY);
     }
 
+    @ReactProp(name = "deadZone", defaultFloat = 0.10f)
+    public void setDeadZone(AnalogStickView view, float deadZone) {
+        view.setDeadZone(deadZone);
+    }
+
     @ReactProp(name = "followFinger", defaultBoolean = true)
     public void setFollowFinger(AnalogStickView view, boolean followFinger) {
         view.setFollowFinger(followFinger);

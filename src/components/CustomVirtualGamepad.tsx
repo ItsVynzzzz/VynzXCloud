@@ -37,6 +37,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
   const localSettings = getLocalSettings();
 
   const {width: clientW, height: clientH} = Dimensions.get('window');
+  const buttonScale = localSettings.virtual_button_scale ?? 1;
+  const stickScaleBase = localSettings.virtual_stick_scale ?? 1;
+  const deadZone = localSettings.virtual_stick_deadzone ?? 0.1;
+  const scaleStyle = {transform: [{scale: buttonScale}]};
 
   React.useEffect(() => {
     const _settings = getSettings();
@@ -96,6 +100,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                 styles.button,
                 {top: button.y, left: button.x, width, height},
                 {opacity},
+                scaleStyle,
               ]}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
@@ -103,6 +108,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
           );
         }
         if (button.name === 'LeftStick') {
+          const stickScale = stickScaleBase * (button.scale ?? 1);
           if (
             localSettings.virtual_gamepad_joystick === 1 ||
             localSettings.virtual_gamepad_joystick === 2
@@ -124,9 +130,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={90}
-                  handleRadius={48}
+                  radius={90 * stickScale}
+                  handleRadius={48 * stickScale}
                   followFinger={localSettings.virtual_gamepad_joystick !== 2}
+                  deadZone={deadZone}
                   homeX={Math.min(
                     Math.max((button.x + 60) / (clientW * 0.5), 0.05),
                     0.95,
@@ -144,12 +151,14 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   styles.button,
                   {top: button.y, left: button.x},
                   {opacity},
+                  {transform: [{scale: stickScale}]},
                 ]}>
                 <View style={styles.leftJs}>
                   <AnalogStick
                     style={styles.analogStick}
                     radius={140}
                     handleRadius={80}
+                    deadZone={deadZone}
                     onStickChange={(data: any) => handleStickMove('left', data)}
                   />
                 </View>
@@ -157,6 +166,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
             );
           }
         } else if (button.name === 'RightStick') {
+          const stickScale = stickScaleBase * (button.scale ?? 1);
           if (
             localSettings.virtual_gamepad_joystick === 1 ||
             localSettings.virtual_gamepad_joystick === 2
@@ -178,9 +188,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                     width: clientW * 0.5,
                     height: clientH,
                   }}
-                  radius={90}
-                  handleRadius={48}
+                  radius={90 * stickScale}
+                  handleRadius={48 * stickScale}
                   followFinger={localSettings.virtual_gamepad_joystick !== 2}
+                  deadZone={deadZone}
                   homeX={Math.min(
                     Math.max(
                       (button.x + 60 - clientW * 0.5) / (clientW * 0.5),
@@ -201,12 +212,14 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                   styles.button,
                   {top: button.y, left: button.x},
                   {opacity},
+                  {transform: [{scale: stickScale}]},
                 ]}>
                 <View style={styles.rightJs}>
                   <AnalogStick
                     style={styles.analogStick}
                     radius={140}
                     handleRadius={80}
+                    deadZone={deadZone}
                     onStickChange={(data: any) =>
                       handleStickMove('right', data)
                     }
@@ -225,6 +238,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
                 styles.button,
                 {opacity},
                 {top: button.y, left: button.x},
+                scaleStyle,
               ]}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}

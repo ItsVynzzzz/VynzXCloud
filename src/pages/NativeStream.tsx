@@ -33,6 +33,7 @@ import VirtualGamepadEditor, {
   ButtonConfig,
 } from '../components/VirtualGamepadEditor';
 import InGameMenu from '../components/InGameMenu';
+import {shapeStick} from '../utils/stickCurve';
 import PerfPanel from '../components/PerfPanel';
 import RTCFsrView from '../components/RTCFsrView';
 import NativeTouchOverlay from '../components/NativeTouchOverlay';
@@ -2461,8 +2462,15 @@ export function NativeStreamScreenBase({
   // Virtual gamepad stick move
   const handleStickMove = (id, data) => {
     // console.log('handleStickMove:', id, data);
-    let leveledX: any = data.x;
-    let leveledY: any = data.y;
+    const sensitivity =
+      Number(
+        id === 'right'
+          ? settings.virtual_stick_sens_right
+          : settings.virtual_stick_sens_left,
+      ) || 1;
+    const shaped = shapeStick(data.x, data.y, sensitivity);
+    let leveledX: any = shaped.x;
+    let leveledY: any = shaped.y;
 
     if (typeof leveledX === 'number') {
       leveledX = leveledX.toFixed(2);
@@ -3039,6 +3047,13 @@ export function NativeStreamScreenBase({
         audioGain={audioGain}
         opacity={settings.virtual_gamepad_opacity ?? 0.7}
         joystick={settings.virtual_gamepad_joystick ?? 1}
+        vs={{
+          buttonScale: settings.virtual_button_scale ?? 1,
+          stickScale: settings.virtual_stick_scale ?? 1,
+          deadzone: settings.virtual_stick_deadzone ?? 0.1,
+          sensLeft: settings.virtual_stick_sens_left ?? 1,
+          sensRight: settings.virtual_stick_sens_right ?? 1,
+        }}
         macroEnabled={!!settings.virtual_macro_enabled}
         profile={settings.custom_virtual_gamepad || ''}
         canPowerOff={!!settings.power_on && route.params?.streamType !== 'cloud'}
