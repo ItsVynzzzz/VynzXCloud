@@ -24,6 +24,7 @@ import {
   createDefaultVirtualDPadButton,
   ensureVirtualDPadLayoutButton,
 } from '../utils/virtualDPad';
+import {buildPresetLayout, modeFromProfile} from '../utils/layoutPresets';
 
 export type ButtonConfig = {
   name: string;
@@ -101,34 +102,6 @@ const sizeOf = (button: ButtonConfig) => {
   const base = baseSize(button);
   const scale = isStick(button.name) ? 1 : button.scale ?? 1;
   return {w: base.w * scale, h: base.h * scale};
-};
-
-const buildDefaultButtons = (): ButtonConfig[] => {
-  const {width, height} = Dimensions.get('window');
-  const nexusLeft = width * 0.5 - 20;
-  const viewLeft = width * 0.5 - 100;
-  const menuLeft = width * 0.5 + 60;
-  const dpadSize = 160;
-
-  return [
-    {name: 'LeftTrigger', x: 30, y: 40, scale: 1, show: true},
-    {name: 'RightTrigger', x: width - 40, y: 40, scale: 1, show: true},
-    {name: 'LeftShoulder', x: 30, y: 100, scale: 1, show: true},
-    {name: 'RightShoulder', x: width - 40, y: 100, scale: 1, show: true},
-    {name: 'A', x: width - 90, y: height - 60, scale: 1, show: true},
-    {name: 'B', x: width - 40, y: height - 110, scale: 1, show: true},
-    {name: 'X', x: width - 140, y: height - 110, scale: 1, show: true},
-    {name: 'Y', x: width - 90, y: height - 160, scale: 1, show: true},
-    {name: 'LeftThumb', x: 225, y: height - 80, scale: 1, show: true},
-    {name: 'RightThumb', x: width - 235, y: height - 70, scale: 1, show: true},
-    {name: 'View', x: viewLeft, y: height - 30, scale: 1, show: true},
-    {name: 'Nexus', x: nexusLeft, y: height - 30, scale: 1, show: true},
-    {name: 'Menu', x: menuLeft, y: height - 30, scale: 1, show: true},
-    createDefaultVirtualDPadButton(15, height - dpadSize - 15, dpadSize, dpadSize),
-    {name: 'LeftStick', x: 175, y: height - 205, show: true},
-    {name: 'RightStick', x: width - 265, y: height - 195, show: true},
-    createDefaultMacroLayoutButton(width, height),
-  ];
 };
 
 type ItemProps = {
@@ -310,7 +283,11 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
     }
     const {width, height} = Dimensions.get('window');
     setBounds({w: width, h: height});
-    const defaultList = buildDefaultButtons();
+    const defaultList = buildPresetLayout(
+      modeFromProfile(profileName) || 'normal',
+      width,
+      height,
+    );
     setDefaults(defaultList);
     const layout = getGamepadLayouts()[profileName];
     let loaded: ButtonConfig[];

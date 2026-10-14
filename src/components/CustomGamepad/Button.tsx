@@ -4,6 +4,7 @@ import ButtonView from '../ButtonView';
 import {SvgXml} from 'react-native-svg';
 import {useTheme} from 'react-native-paper';
 import icons from '../../common/virtualgp';
+import {skinButtonName} from '../../utils/gamepadSkin';
 import {VIRTUAL_MACRO_BUTTON_NAME} from '../../utils/virtualMacro';
 import {colorizeMacroIconXml, normalizeHexColor} from '../../utils/themeColor';
 
@@ -73,7 +74,7 @@ const GamepadButton: React.FC<Props> = ({
     return (
       <View style={style} pointerEvents="none">
         <ButtonView
-          buttonName={mapping[name]}
+          buttonName={skinButtonName(name, mapping[name])}
           style={{width: width * scale, height: height * scale}}
         />
       </View>

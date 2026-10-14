@@ -5,6 +5,7 @@ import ButtonView from './ButtonView';
 import DPadView from './DPadView';
 import GamepadButton from './GamepadButton';
 import {getSettings} from '../store/settingStore';
+import {skinButtonName} from '../utils/gamepadSkin';
 import {VIRTUAL_MACRO_BUTTON_NAME} from '../utils/virtualMacro';
 
 type Props = {
@@ -49,56 +50,56 @@ const VirtualGamepad: React.FC<Props> = ({
     <View style={styles.wrap} pointerEvents="box-none">
       <ButtonView
         style={[styles.button, styles.lt, {opacity}, btnScale]}
-        buttonName="control_button_lt"
+        buttonName={skinButtonName('LeftTrigger', 'control_button_lt')}
         onPressIn={() => handlePressIn('LeftTrigger')}
         onPressOut={() => handlePressOut('LeftTrigger')}
       />
 
       <ButtonView
         style={[styles.button, styles.rt, {opacity}, btnScale]}
-        buttonName="control_button_rt"
+        buttonName={skinButtonName('RightTrigger', 'control_button_rt')}
         onPressIn={() => handlePressIn('RightTrigger')}
         onPressOut={() => handlePressOut('RightTrigger')}
       />
 
       <ButtonView
         style={[styles.button, styles.lb, {opacity}, btnScale]}
-        buttonName="control_button_lb"
+        buttonName={skinButtonName('LeftShoulder', 'control_button_lb')}
         onPressIn={() => handlePressIn('LeftShoulder')}
         onPressOut={() => handlePressOut('LeftShoulder')}
       />
 
       <ButtonView
         style={[styles.button, styles.rb, {opacity}, btnScale]}
-        buttonName="control_button_rb"
+        buttonName={skinButtonName('RightShoulder', 'control_button_rb')}
         onPressIn={() => handlePressIn('RightShoulder')}
         onPressOut={() => handlePressOut('RightShoulder')}
       />
 
       <ButtonView
         style={[styles.button, styles.a, {opacity}, btnScale]}
-        buttonName="control_button_a"
+        buttonName={skinButtonName('A', 'control_button_a')}
         onPressIn={() => handlePressIn('A')}
         onPressOut={() => handlePressOut('A')}
       />
 
       <ButtonView
         style={[styles.button, styles.b, {opacity}, btnScale]}
-        buttonName="control_button_b"
+        buttonName={skinButtonName('B', 'control_button_b')}
         onPressIn={() => handlePressIn('B')}
         onPressOut={() => handlePressOut('B')}
       />
 
       <ButtonView
         style={[styles.button, styles.x, {opacity}, btnScale]}
-        buttonName="control_button_x"
+        buttonName={skinButtonName('X', 'control_button_x')}
         onPressIn={() => handlePressIn('X')}
         onPressOut={() => handlePressOut('X')}
       />
 
       <ButtonView
         style={[styles.button, styles.y, {opacity}, btnScale]}
-        buttonName="control_button_y"
+        buttonName={skinButtonName('Y', 'control_button_y')}
         onPressIn={() => handlePressIn('Y')}
         onPressOut={() => handlePressOut('Y')}
       />
@@ -136,7 +137,7 @@ const VirtualGamepad: React.FC<Props> = ({
 
       <ButtonView
         style={[styles.button, styles.nexus, {opacity}, btnScale]}
-        buttonName="control_button_xbox"
+        buttonName={skinButtonName('Nexus', 'control_button_xbox')}
         onPressIn={() => handlePressIn('Nexus')}
         onPressOut={() => handlePressOut('Nexus')}
       />

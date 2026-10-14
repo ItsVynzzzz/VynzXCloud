@@ -5,6 +5,7 @@ import {GestureDetector, Gesture} from 'react-native-gesture-handler';
 import {SvgXml} from 'react-native-svg';
 import {useTheme} from 'react-native-paper';
 import icons from '../../common/virtualgp';
+import {skinButtonName} from '../../utils/gamepadSkin';
 import {VIRTUAL_MACRO_BUTTON_NAME} from '../../utils/virtualMacro';
 import {colorizeMacroIconXml, normalizeHexColor} from '../../utils/themeColor';
 
@@ -75,7 +76,9 @@ const GamepadButton: React.FC<Props> = ({
     height = 44;
   }
 
-  const mappedButtonName = mapping[name];
+  const mappedButtonName = mapping[name]
+    ? skinButtonName(name, mapping[name])
+    : undefined;
   if (!mappedButtonName) {
     const longPressGesture = Gesture.LongPress()
       .onStart(() => {

@@ -85,6 +85,16 @@ const vgamepad = [
       {value: 0, text: t('Fixed')},
     ],
   },
+  {
+    name: 'virtual_gamepad_skin',
+    type: 'radio',
+    title: t('VSkin'),
+    description: t('VSkinDesc'),
+    data: [
+      {value: 'xbox', text: 'Xbox'},
+      {value: 'ps', text: 'PlayStation'},
+    ],
+  },
 ];
 
 export default vgamepad;

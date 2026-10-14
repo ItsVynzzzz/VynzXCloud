@@ -14,6 +14,7 @@ import {Icon, Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 import {getSettings as getGamepadLayouts} from '../store/gamepadStore';
 import {useGamepadNavigation} from '../utils/useGamepadNavigation';
+import {LAYOUT_MODES, modeFromProfile} from '../utils/layoutPresets';
 
 type Props = {
   visible: boolean;
@@ -45,6 +46,9 @@ type Props = {
   onSendText: () => void;
   onAudioGain: (value: number) => void;
   onChangeSetting: (partial: Record<string, any>) => void;
+  skin: string;
+  onApplyMode: (mode: string) => void;
+  onResetMode: () => void;
   onEditLayout: () => void;
   onSaveExit: () => void;
   onDisconnect: () => void;
@@ -62,6 +66,13 @@ const MUTED = 'rgba(255, 255, 255, 0.62)';
 const LINE = 'rgba(255, 255, 255, 0.16)';
 const FILL = 'rgba(255, 255, 255, 0.06)';
 const FILL_ON = 'rgba(255, 255, 255, 0.18)';
+
+const MODE_LABEL: Record<string, string> = {
+  normal: 'ModeNormal',
+  playstation: 'ModePlayStation',
+  fps: 'ModeFPS',
+  racing: 'ModeRacing',
+};
 
 const clamp = (v: number, min: number, max: number) =>
   Math.min(max, Math.max(min, v));
@@ -522,6 +533,27 @@ const InGameMenu = (props: Props) => {
 
     body.push(section('s_layout', t('IgmSectionLayout')));
     body.push(
+      segment(
+        'mode',
+        t('IgmMode'),
+        LAYOUT_MODES.map(mode => ({value: mode, text: t(MODE_LABEL[mode])})),
+        modeFromProfile(props.profile) || '',
+        value => props.onApplyMode(value),
+      ),
+    );
+    body.push(
+      segment(
+        'skin',
+        t('IgmSkin'),
+        [
+          {value: 'xbox', text: 'Xbox'},
+          {value: 'ps', text: 'PlayStation'},
+        ],
+        props.skin,
+        value => props.onChangeSetting({virtual_gamepad_skin: value}),
+      ),
+    );
+    body.push(
       toggleRow('macro', t('IgmMacro'), props.macroEnabled, () =>
         props.onChangeSetting({virtual_macro_enabled: !props.macroEnabled}),
       ),
@@ -532,7 +564,9 @@ const InGameMenu = (props: Props) => {
         t('IgmProfile'),
         [
           {value: '', text: t('IgmProfileClassic')},
-          ...profiles.map(name => ({
+          ...profiles
+            .filter(name => !modeFromProfile(name))
+            .map(name => ({
             value: name,
             text: name === 'LiveLayout' ? t('IgmProfileMain') : name,
           })),
@@ -547,6 +581,13 @@ const InGameMenu = (props: Props) => {
         chevron: true,
       }),
     );
+    if (modeFromProfile(props.profile)) {
+      body.push(
+        row('reset_mode', 'restore', t('IgmResetMode'), props.onResetMode, {
+          desc: t('IgmResetModeDesc'),
+        }),
+      );
+    }
     body.push(
       row(
         'reset_controls',

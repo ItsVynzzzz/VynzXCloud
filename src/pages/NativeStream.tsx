@@ -12,6 +12,7 @@ import {
   AppState,
   StatusBar,
   useWindowDimensions,
+  Dimensions,
 } from 'react-native';
 import {IconButton} from 'react-native-paper';
 import {RTCView, MediaStream, RTCRtpReceiver} from 'react-native-webrtc';
@@ -21,7 +22,10 @@ import {useSelector} from 'react-redux';
 import XcloudApi from '../xCloud';
 import WebApi from '../web';
 import {getSettings, saveSettings} from '../store/settingStore';
-import {saveSettings as saveGamepadLayout} from '../store/gamepadStore';
+import {
+  getSettings as getGamepadLayouts,
+  saveSettings as saveGamepadLayout,
+} from '../store/gamepadStore';
 import {useTranslation} from 'react-i18next';
 import webRTCClient from '../webrtc';
 import {debugFactory} from '../utils/debug';
@@ -34,6 +38,12 @@ import VirtualGamepadEditor, {
 } from '../components/VirtualGamepadEditor';
 import InGameMenu from '../components/InGameMenu';
 import {shapeStick} from '../utils/stickCurve';
+import {
+  MODE_PROFILE,
+  MODE_SETTINGS,
+  buildPresetLayout,
+  modeFromProfile,
+} from '../utils/layoutPresets';
 import PerfPanel from '../components/PerfPanel';
 import RTCFsrView from '../components/RTCFsrView';
 import NativeTouchOverlay from '../components/NativeTouchOverlay';
@@ -2570,6 +2580,45 @@ export function NativeStreamScreenBase({
     [],
   );
 
+  // Memilih mode tata letak (Normal/PlayStation/FPS/Balap): membuat profilnya
+  // sekali (jika belum ada, supaya hasil edit pengguna tidak tertimpa), lalu
+  // mengaktifkannya bersama pengaturan analog yang cocok untuk mode itu.
+  const handleApplyMode = React.useCallback(
+    (mode: string) => {
+      const layoutMode = mode as any;
+      const profileName = MODE_PROFILE[layoutMode];
+      if (!profileName) {
+        return;
+      }
+      if (!getGamepadLayouts()[profileName]) {
+        const {width, height} = Dimensions.get('window');
+        saveGamepadLayout(
+          profileName,
+          buildPresetLayout(layoutMode, width, height),
+        );
+      }
+      handleMenuChangeSetting({
+        ...MODE_SETTINGS[layoutMode],
+        custom_virtual_gamepad: profileName,
+      });
+      setShowVirtualGamepad(true);
+    },
+    [handleMenuChangeSetting],
+  );
+
+  const handleResetMode = React.useCallback(() => {
+    const layoutMode = modeFromProfile(getActiveProfileName());
+    if (!layoutMode) {
+      return;
+    }
+    const {width, height} = Dimensions.get('window');
+    saveGamepadLayout(
+      MODE_PROFILE[layoutMode],
+      buildPresetLayout(layoutMode, width, height),
+    );
+    setGamepadLayoutVersion(prev => prev + 1);
+  }, [getActiveProfileName]);
+
   const savePortraitGamepadLayout = React.useCallback(
     (layout: PortraitGamepadControl[]) => {
       const nextSettings = {
@@ -3047,6 +3096,9 @@ export function NativeStreamScreenBase({
         audioGain={audioGain}
         opacity={settings.virtual_gamepad_opacity ?? 0.7}
         joystick={settings.virtual_gamepad_joystick ?? 1}
+        skin={settings.virtual_gamepad_skin ?? 'xbox'}
+        onApplyMode={handleApplyMode}
+        onResetMode={handleResetMode}
         vs={{
           buttonScale: settings.virtual_button_scale ?? 1,
           stickScale: settings.virtual_stick_scale ?? 1,
