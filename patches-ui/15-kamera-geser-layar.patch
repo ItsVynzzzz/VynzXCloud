@@ -1,0 +1,702 @@
+diff --git a/src/common/settings/vgamepad.ts b/src/common/settings/vgamepad.ts
+index 9aad9c3..ebf3496 100644
+--- a/src/common/settings/vgamepad.ts
++++ b/src/common/settings/vgamepad.ts
+@@ -95,6 +95,55 @@ const vgamepad = [
+       {value: 'ps', text: 'PlayStation'},
+     ],
+   },
++  {
++    name: 'virtual_touch_look',
++    type: 'radio',
++    title: t('IgmTouchLook'),
++    description: t('VLookDesc'),
++    data: [
++      {value: false, text: t('Disable')},
++      {value: true, text: t('Enable')},
++    ],
++  },
++  {
++    name: 'virtual_look_sens',
++    type: 'slider',
++    min: 0.5,
++    max: 3,
++    step: 0.1,
++    title: t('IgmLookSens'),
++    description: t('VLookSensDesc'),
++    data: [],
++  },
++  {
++    name: 'virtual_look_sens_y',
++    type: 'slider',
++    min: 0.5,
++    max: 1.5,
++    step: 0.1,
++    title: t('IgmLookSensY'),
++    description: t('VLookSensYDesc'),
++    data: [],
++  },
++  {
++    name: 'virtual_look_smooth',
++    type: 'slider',
++    min: 0,
++    max: 0.8,
++    step: 0.1,
++    title: t('IgmLookSmooth'),
++    description: t('VLookSmoothDesc'),
++    data: [],
++  },
++  {
++    name: 'virtual_look_invert_y',
++    type: 'radio',
++    title: t('IgmLookInvert'),
++    data: [
++      {value: false, text: t('Disable')},
++      {value: true, text: t('Enable')},
++    ],
++  },
+ ];
+ 
+ export default vgamepad;
+diff --git a/src/components/CustomVirtualGamepad.tsx b/src/components/CustomVirtualGamepad.tsx
+index f15e273..7b5d5e2 100644
+--- a/src/components/CustomVirtualGamepad.tsx
++++ b/src/components/CustomVirtualGamepad.tsx
+@@ -3,6 +3,7 @@ import {StyleSheet, View, Dimensions} from 'react-native';
+ import GamepadButton from './CustomGamepad/GamepadButton';
+ import DPadView from './DPadView';
+ import AnalogStick from '../components/AnalogStick';
++import TouchLookArea from './TouchLookArea';
+ import {getSettings as getLocalSettings} from '../store/settingStore';
+ import {getSettings} from '../store/gamepadStore';
+ import {
+@@ -22,6 +23,7 @@ type Props = {
+   onPressIn: (name: string | string[]) => any;
+   onPressOut: (name: string | string[]) => any;
+   onStickMove: (id: string, position: any) => any;
++  onLookMove?: (x: number, y: number) => void;
+   refreshKey?: number;
+ };
+ 
+@@ -31,6 +33,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+   onPressIn,
+   onPressOut,
+   onStickMove,
++  onLookMove,
+   refreshKey = 0,
+ }) => {
+   const [buttons, setButtons] = React.useState<any>([]);
+@@ -80,6 +83,18 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+ 
+   return (
+     <View style={styles.wrap} pointerEvents="box-none">
++      {localSettings.virtual_touch_look && onLookMove ? (
++        <TouchLookArea
++          onLook={onLookMove as any}
++          sensitivity={localSettings.virtual_look_sens ?? 1}
++          sensitivityY={localSettings.virtual_look_sens_y ?? 1}
++          smoothing={localSettings.virtual_look_smooth ?? 0.3}
++          invertY={!!localSettings.virtual_look_invert_y}
++          width="50%"
++          height="100%"
++        />
++      ) : null}
++
+       {buttons.map((button: any) => {
+         if (!button.show) {
+           return null;
+@@ -166,6 +181,9 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+             );
+           }
+         } else if (button.name === 'RightStick') {
++          if (localSettings.virtual_touch_look && onLookMove) {
++            return null;
++          }
+           const stickScale = stickScaleBase * (button.scale ?? 1);
+           if (
+             localSettings.virtual_gamepad_joystick === 1 ||
+diff --git a/src/components/InGameMenu.tsx b/src/components/InGameMenu.tsx
+index 8809e3d..cdf1774 100644
+--- a/src/components/InGameMenu.tsx
++++ b/src/components/InGameMenu.tsx
+@@ -33,6 +33,13 @@ type Props = {
+     sensLeft: number;
+     sensRight: number;
+   };
++  look: {
++    enabled: boolean;
++    sens: number;
++    sensY: number;
++    smooth: number;
++    invertY: boolean;
++  };
+   joystick: number;
+   macroEnabled: boolean;
+   profile: string;
+@@ -531,6 +538,45 @@ const InGameMenu = (props: Props) => {
+       ),
+     );
+ 
++    body.push(section('s_look', t('IgmSectionLook')));
++    body.push(
++      toggleRow('touch_look', t('IgmTouchLook'), props.look.enabled, () =>
++        props.onChangeSetting({virtual_touch_look: !props.look.enabled}),
++      ),
++    );
++    body.push(
++      stepper(
++        'look_sens',
++        t('IgmLookSens'),
++        mult(props.look.sens),
++        () => adjust('virtual_look_sens', props.look.sens, -0.1, 0.5, 3),
++        () => adjust('virtual_look_sens', props.look.sens, 0.1, 0.5, 3),
++      ),
++    );
++    body.push(
++      stepper(
++        'look_sens_y',
++        t('IgmLookSensY'),
++        mult(props.look.sensY),
++        () => adjust('virtual_look_sens_y', props.look.sensY, -0.1, 0.5, 1.5),
++        () => adjust('virtual_look_sens_y', props.look.sensY, 0.1, 0.5, 1.5),
++      ),
++    );
++    body.push(
++      stepper(
++        'look_smooth',
++        t('IgmLookSmooth'),
++        pct(props.look.smooth),
++        () => adjust('virtual_look_smooth', props.look.smooth, -0.1, 0, 0.8),
++        () => adjust('virtual_look_smooth', props.look.smooth, 0.1, 0, 0.8),
++      ),
++    );
++    body.push(
++      toggleRow('look_invert', t('IgmLookInvert'), props.look.invertY, () =>
++        props.onChangeSetting({virtual_look_invert_y: !props.look.invertY}),
++      ),
++    );
++
+     body.push(section('s_layout', t('IgmSectionLayout')));
+     body.push(
+       segment(
+@@ -600,6 +646,10 @@ const InGameMenu = (props: Props) => {
+             virtual_stick_deadzone: 0.1,
+             virtual_stick_sens_left: 1,
+             virtual_stick_sens_right: 1,
++            virtual_look_sens: 1,
++            virtual_look_sens_y: 1,
++            virtual_look_smooth: 0.3,
++            virtual_look_invert_y: false,
+           }),
+         {desc: t('IgmResetControlsDesc')},
+       ),
+diff --git a/src/components/TouchLookArea.tsx b/src/components/TouchLookArea.tsx
+new file mode 100644
+index 0000000..b007623
+--- /dev/null
++++ b/src/components/TouchLookArea.tsx
+@@ -0,0 +1,142 @@
++import React from 'react';
++import {StyleSheet, View} from 'react-native';
++import {
++  LookConfig,
++  TICK_MS,
++  clearDeltas,
++  isLookIdle,
++  newLookState,
++  pushDelta,
++  stepLook,
++} from '../utils/touchLook';
++
++type Props = LookConfig & {
++  onLook: (x: number, y: number) => void;
++  width: number | string;
++  height: number | string;
++};
++
++// Area transparan di separuh kanan layar. Menggeser jari di sini memutar kamera.
++// Berada di bawah tombol (zIndex lebih rendah), jadi menekan tombol tidak memutar kamera.
++const TouchLookArea = ({
++  onLook,
++  width,
++  height,
++  sensitivity,
++  sensitivityY,
++  smoothing,
++  invertY,
++}: Props) => {
++  const latest = React.useRef({
++    onLook,
++    cfg: {sensitivity, sensitivityY, smoothing, invertY},
++  });
++  latest.current = {
++    onLook,
++    cfg: {sensitivity, sensitivityY, smoothing, invertY},
++  };
++
++  const state = React.useRef(newLookState());
++  const activeId = React.useRef<string | number | null>(null);
++  const last = React.useRef({x: 0, y: 0});
++  const timer = React.useRef<ReturnType<typeof setInterval> | null>(null);
++
++  const stopTimer = React.useCallback(() => {
++    if (timer.current) {
++      clearInterval(timer.current);
++      timer.current = null;
++    }
++  }, []);
++
++  const tick = React.useCallback(() => {
++    const out = stepLook(state.current, Date.now(), latest.current.cfg);
++    if (activeId.current === null && isLookIdle(state.current)) {
++      state.current.outX = 0;
++      state.current.outY = 0;
++      latest.current.onLook(0, 0);
++      stopTimer();
++      return;
++    }
++    latest.current.onLook(out.x, out.y);
++  }, [stopTimer]);
++
++  const startTimer = React.useCallback(() => {
++    if (!timer.current) {
++      timer.current = setInterval(tick, TICK_MS);
++    }
++  }, [tick]);
++
++  React.useEffect(
++    () => () => {
++      stopTimer();
++      latest.current.onLook(0, 0);
++    },
++    [stopTimer],
++  );
++
++  const onTouchStart = (e: any) => {
++    if (activeId.current !== null) {
++      return;
++    }
++    const touch = e.nativeEvent.changedTouches[0];
++    if (!touch) {
++      return;
++    }
++    activeId.current = touch.identifier;
++    last.current = {x: touch.pageX, y: touch.pageY};
++    clearDeltas(state.current);
++    startTimer();
++  };
++
++  const onTouchMove = (e: any) => {
++    if (activeId.current === null) {
++      return;
++    }
++    const touches = e.nativeEvent.changedTouches as any[];
++    const touch = touches.find(item => item.identifier === activeId.current);
++    if (!touch) {
++      return;
++    }
++    pushDelta(
++      state.current,
++      Date.now(),
++      touch.pageX - last.current.x,
++      touch.pageY - last.current.y,
++    );
++    last.current = {x: touch.pageX, y: touch.pageY};
++  };
++
++  const onTouchEnd = (e: any) => {
++    if (activeId.current === null) {
++      return;
++    }
++    const touches = e.nativeEvent.changedTouches as any[];
++    if (touches.some(item => item.identifier === activeId.current)) {
++      activeId.current = null;
++      // Jari diangkat: kamera berhenti, tidak "meluncur" terus.
++      clearDeltas(state.current);
++    }
++  };
++
++  return (
++    <View
++      collapsable={false}
++      style={[styles.area, {width, height}]}
++      onTouchStart={onTouchStart}
++      onTouchMove={onTouchMove}
++      onTouchEnd={onTouchEnd}
++      onTouchCancel={onTouchEnd}
++    />
++  );
++};
++
++const styles = StyleSheet.create({
++  area: {
++    position: 'absolute',
++    right: 0,
++    top: 0,
++    zIndex: 9,
++  },
++});
++
++export default React.memo(TouchLookArea);
+diff --git a/src/components/VirtualGamepad.tsx b/src/components/VirtualGamepad.tsx
+index dad6eaf..1d19167 100644
+--- a/src/components/VirtualGamepad.tsx
++++ b/src/components/VirtualGamepad.tsx
+@@ -6,6 +6,7 @@ import DPadView from './DPadView';
+ import GamepadButton from './GamepadButton';
+ import {getSettings} from '../store/settingStore';
+ import {skinButtonName} from '../utils/gamepadSkin';
++import TouchLookArea from './TouchLookArea';
+ import {VIRTUAL_MACRO_BUTTON_NAME} from '../utils/virtualMacro';
+ 
+ type Props = {
+@@ -13,6 +14,7 @@ type Props = {
+   onPressIn: (name: string | string[]) => any;
+   onPressOut: (name: string | string[]) => any;
+   onStickMove: (id: string, position: any) => any;
++  onLookMove?: (x: number, y: number) => void;
+ };
+ 
+ const VirtualGamepad: React.FC<Props> = ({
+@@ -20,6 +22,7 @@ const VirtualGamepad: React.FC<Props> = ({
+   onPressIn,
+   onPressOut,
+   onStickMove,
++  onLookMove,
+ }) => {
+   const settings = getSettings();
+   const buttonScale = settings.virtual_button_scale ?? 1;
+@@ -27,6 +30,7 @@ const VirtualGamepad: React.FC<Props> = ({
+   const deadZone = settings.virtual_stick_deadzone ?? 0.1;
+   const btnScale = {transform: [{scale: buttonScale}]};
+   const stickBoxScale = {transform: [{scale: stickScale}]};
++  const touchLookActive = !!settings.virtual_touch_look && !!onLookMove;
+ 
+   const handlePressIn = (name: string | string[]) => {
+     onPressIn && onPressIn(name);
+@@ -193,7 +197,17 @@ const VirtualGamepad: React.FC<Props> = ({
+         </View>
+       ) : null}
+ 
+-      {settings.virtual_gamepad_joystick === 1 ||
++      {touchLookActive ? (
++        <TouchLookArea
++          onLook={onLookMove as any}
++          sensitivity={settings.virtual_look_sens ?? 1}
++          sensitivityY={settings.virtual_look_sens_y ?? 1}
++          smoothing={settings.virtual_look_smooth ?? 0.3}
++          invertY={!!settings.virtual_look_invert_y}
++          width="50%"
++          height="100%"
++        />
++      ) : settings.virtual_gamepad_joystick === 1 ||
+       settings.virtual_gamepad_joystick === 2 ? (
+         <View
+           // eslint-disable-next-line react-native/no-inline-styles
+@@ -234,7 +248,7 @@ const VirtualGamepad: React.FC<Props> = ({
+         </View>
+       ) : null}
+ 
+-      {settings.virtual_gamepad_joystick === 0 ? (
++      {settings.virtual_gamepad_joystick === 0 && !touchLookActive ? (
+         <View style={[styles.button, styles.rightJs, {opacity}, stickBoxScale]}>
+           <AnalogStick
+             style={styles.analogStick}
+diff --git a/src/components/VirtualGamepadEditor.tsx b/src/components/VirtualGamepadEditor.tsx
+index 421addc..efc4727 100644
+--- a/src/components/VirtualGamepadEditor.tsx
++++ b/src/components/VirtualGamepadEditor.tsx
+@@ -25,6 +25,7 @@ import {
+   ensureVirtualDPadLayoutButton,
+ } from '../utils/virtualDPad';
+ import {buildPresetLayout, modeFromProfile} from '../utils/layoutPresets';
++import {getSettings as getAppSettings} from '../store/settingStore';
+ 
+ export type ButtonConfig = {
+   name: string;
+@@ -395,6 +396,9 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
+     );
+   };
+ 
++  // Saat kamera geser layar aktif, analog kanan tidak dipakai: separuh kanan layar jadi area kamera.
++  const touchLook = !!getAppSettings().virtual_touch_look;
++
+   if (!visible) {
+     return null;
+   }
+@@ -409,7 +413,15 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
+           />
+         ) : null}
+ 
+-        {buttons.map(button => (
++        {touchLook ? (
++          <View pointerEvents="none" style={styles.lookZone}>
++            <Text style={styles.lookZoneText}>{t('EdLookZone')}</Text>
++          </View>
++        ) : null}
++
++        {buttons
++          .filter(button => !(touchLook && button.name === 'RightStick'))
++          .map(button => (
+           <EditorItem
+             key={button.name}
+             button={button}
+@@ -495,6 +507,23 @@ const styles = StyleSheet.create({
+     ...StyleSheet.absoluteFillObject,
+     backgroundColor: 'rgba(0, 0, 0, 0.62)',
+   },
++  lookZone: {
++    position: 'absolute',
++    right: 0,
++    top: 0,
++    bottom: 0,
++    width: '50%',
++    alignItems: 'center',
++    justifyContent: 'center',
++    backgroundColor: 'rgba(255, 255, 255, 0.04)',
++    borderLeftWidth: 1,
++    borderLeftColor: 'rgba(255, 255, 255, 0.25)',
++  },
++  lookZoneText: {
++    color: 'rgba(255, 255, 255, 0.4)',
++    fontSize: 13,
++    fontWeight: '600',
++  },
+   item: {
+     position: 'absolute',
+     left: 0,
+diff --git a/src/languages/en.ts b/src/languages/en.ts
+index 71931da..98bbe9c 100644
+--- a/src/languages/en.ts
++++ b/src/languages/en.ts
+@@ -702,5 +702,16 @@ export default {
+     IgmSkin: 'Icon style',
+     IgmResetMode: 'Restore the layout of this mode',
+     IgmResetModeDesc: 'Buttons return to the default positions for this mode',
++    IgmSectionLook: 'Camera',
++    IgmTouchLook: 'Swipe screen to look',
++    IgmLookSens: 'Camera sensitivity',
++    IgmLookSensY: 'Vertical sensitivity',
++    IgmLookSmooth: 'Smoothing',
++    IgmLookInvert: 'Invert Y axis',
++    EdLookZone: 'Camera area: swipe the screen here',
++    VLookDesc: 'Swipe in the right half of the screen to turn the camera, without the right stick. The camera stops when your finger stops.',
++    VLookSensDesc: 'Higher values turn the camera further for the same finger movement.',
++    VLookSensYDesc: 'Extra multiplier for up-down movement. Lower it if vertical aim is too wild.',
++    VLookSmoothDesc: 'Higher values make camera movement smoother but slightly slower to respond.',
+   },
+ };
+diff --git a/src/languages/id.ts b/src/languages/id.ts
+index ce9a66d..68aa40a 100644
+--- a/src/languages/id.ts
++++ b/src/languages/id.ts
+@@ -708,5 +708,16 @@ export default {
+     IgmSkin: 'Gaya ikon',
+     IgmResetMode: 'Kembalikan tata letak mode ini',
+     IgmResetModeDesc: 'Posisi tombol kembali ke susunan bawaan mode ini',
++    IgmSectionLook: 'Kamera',
++    IgmTouchLook: 'Kamera geser layar',
++    IgmLookSens: 'Sensitivitas kamera',
++    IgmLookSensY: 'Sensitivitas vertikal',
++    IgmLookSmooth: 'Penghalusan',
++    IgmLookInvert: 'Balik sumbu Y',
++    EdLookZone: 'Area kamera: geser layar di sini',
++    VLookDesc: 'Geser jari di separuh kanan layar untuk memutar kamera, tanpa analog kanan. Kamera berhenti saat jari berhenti.',
++    VLookSensDesc: 'Makin tinggi, makin jauh kamera berputar untuk gerakan jari yang sama.',
++    VLookSensYDesc: 'Pengali tambahan untuk gerakan atas-bawah. Turunkan jika bidikan vertikal terlalu liar.',
++    VLookSmoothDesc: 'Makin tinggi, gerakan kamera makin halus tetapi sedikit lebih lambat merespons.',
+   },
+ };
+diff --git a/src/pages/NativeStream.tsx b/src/pages/NativeStream.tsx
+index 9d138d5..ed9e2ee 100644
+--- a/src/pages/NativeStream.tsx
++++ b/src/pages/NativeStream.tsx
+@@ -2504,6 +2504,16 @@ export function NativeStreamScreenBase({
+     }
+   };
+ 
++  // Kamera geser layar: nilai sudah berupa kecepatan jari yang dinormalkan,
++  // jadi langsung dikirim sebagai analog kanan (tanpa kurva sensitivitas analog).
++  const handleLookMove = (x: number, y: number) => {
++    const lookX = Number(x.toFixed(2));
++    const lookY = Number(y.toFixed(2));
++    isRightstickMoving.current = lookX !== 0 || lookY !== 0;
++    gpState.RightThumbXAxis = lookX;
++    gpState.RightThumbYAxis = lookY;
++  };
++
+   const requestExit = React.useCallback(
+     (off = false) => {
+       clearMacroTimers();
+@@ -2833,6 +2843,7 @@ export function NativeStreamScreenBase({
+           onPressIn={handleButtonPressIn}
+           onPressOut={handleButtonPressOut}
+           onStickMove={handleStickMove}
++          onLookMove={handleLookMove}
+           refreshKey={gamepadLayoutVersion}
+         />
+       );
+@@ -2843,6 +2854,7 @@ export function NativeStreamScreenBase({
+           onPressIn={handleButtonPressIn}
+           onPressOut={handleButtonPressOut}
+           onStickMove={handleStickMove}
++          onLookMove={handleLookMove}
+         />
+       );
+     }
+@@ -3106,6 +3118,13 @@ export function NativeStreamScreenBase({
+           sensLeft: settings.virtual_stick_sens_left ?? 1,
+           sensRight: settings.virtual_stick_sens_right ?? 1,
+         }}
++        look={{
++          enabled: !!settings.virtual_touch_look,
++          sens: settings.virtual_look_sens ?? 1,
++          sensY: settings.virtual_look_sens_y ?? 1,
++          smooth: settings.virtual_look_smooth ?? 0.3,
++          invertY: !!settings.virtual_look_invert_y,
++        }}
+         macroEnabled={!!settings.virtual_macro_enabled}
+         profile={settings.custom_virtual_gamepad || ''}
+         canPowerOff={!!settings.power_on && route.params?.streamType !== 'cloud'}
+diff --git a/src/store/settingStore.ts b/src/store/settingStore.ts
+index cff7722..f7d612c 100644
+--- a/src/store/settingStore.ts
++++ b/src/store/settingStore.ts
+@@ -69,6 +69,11 @@ export type Settings = {
+   virtual_stick_sens_left: number;
+   virtual_stick_sens_right: number;
+   virtual_gamepad_skin: string;
++  virtual_touch_look: boolean;
++  virtual_look_sens: number;
++  virtual_look_sens_y: number;
++  virtual_look_smooth: number;
++  virtual_look_invert_y: boolean;
+   custom_virtual_gamepad: string;
+   virtual_macro_enabled: boolean;
+   virtual_macro_loop_enabled: boolean;
+@@ -159,6 +164,11 @@ const defaultSettings: Settings = {
+   virtual_stick_sens_left: 1,
+   virtual_stick_sens_right: 1,
+   virtual_gamepad_skin: 'xbox',
++  virtual_touch_look: false,
++  virtual_look_sens: 1,
++  virtual_look_sens_y: 1,
++  virtual_look_smooth: 0.3,
++  virtual_look_invert_y: false,
+   virtual_macro_enabled: false,
+   virtual_macro_loop_enabled: false,
+   virtual_macro_loop_interval_ms: 500,
+diff --git a/src/utils/layoutPresets.ts b/src/utils/layoutPresets.ts
+index 9adc00c..a1c95ea 100644
+--- a/src/utils/layoutPresets.ts
++++ b/src/utils/layoutPresets.ts
+@@ -29,6 +29,7 @@ export const modeFromProfile = (profile: string): LayoutMode | null => {
+ export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
+   normal: {
+     virtual_gamepad_skin: 'xbox',
++    virtual_touch_look: false,
+     virtual_gamepad_joystick: 1,
+     virtual_stick_deadzone: 0.1,
+     virtual_stick_sens_left: 1,
+@@ -36,14 +37,16 @@ export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
+   },
+   playstation: {
+     virtual_gamepad_skin: 'ps',
++    virtual_touch_look: false,
+     virtual_gamepad_joystick: 1,
+     virtual_stick_deadzone: 0.1,
+     virtual_stick_sens_left: 1,
+     virtual_stick_sens_right: 1,
+   },
+-  // Membidik dengan menyeret di separuh kanan layar; stick tidak ikut jari
+-  // supaya bidikan tidak "lepas" saat jari ditarik jauh.
++  // Kamera diputar dengan menggeser layar (tanpa analog kanan). Analog kiri
++  // memakai mode Pindah seperti game mobile pada umumnya.
+   fps: {
++    virtual_touch_look: true,
+     virtual_gamepad_joystick: 2,
+     virtual_stick_deadzone: 0.05,
+     virtual_stick_sens_left: 1,
+@@ -51,6 +54,7 @@ export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
+   },
+   // Kemudi dengan analog kiri tetap di tempatnya.
+   racing: {
++    virtual_touch_look: false,
+     virtual_gamepad_joystick: 0,
+     virtual_stick_deadzone: 0.1,
+     virtual_stick_sens_left: 1,
+diff --git a/src/utils/touchLook.ts b/src/utils/touchLook.ts
+new file mode 100644
+index 0000000..f49437f
+--- /dev/null
++++ b/src/utils/touchLook.ts
+@@ -0,0 +1,69 @@
++// Kamera geser layar: gerak jari diubah menjadi output analog kanan.
++// Yang diukur adalah KECEPATAN jari, bukan seberapa jauh jari dari titik awal.
++// Jadi kamera berputar sesuai gerakan jari dan langsung berhenti saat jari
++// berhenti (tidak seperti analog yang terus memutar selama ditahan).
++
++export type LookConfig = {
++  sensitivity: number; // pengali kecepatan (1 = bawaan)
++  sensitivityY: number; // pengali tambahan untuk sumbu vertikal
++  smoothing: number; // 0 = langsung, makin besar makin halus
++  invertY: boolean;
++};
++
++export type LookState = {
++  events: Array<{t: number; dx: number; dy: number}>;
++  outX: number;
++  outY: number;
++};
++
++export const TICK_MS = 16;
++// Kecepatan dihitung dari gerakan dalam jendela waktu pendek supaya mulus
++// walau jarak antar event sentuh tidak seragam.
++export const WINDOW_MS = 48;
++// Jarak jari (dp) per 16 ms yang menghasilkan analog penuh pada sensitivitas 1.
++export const PX_FULL = 8;
++const IDLE_LIMIT = 0.02;
++
++const clamp = (v: number, min: number, max: number) =>
++  Math.min(max, Math.max(min, v));
++
++export const newLookState = (): LookState => ({events: [], outX: 0, outY: 0});
++
++export const pushDelta = (
++  state: LookState,
++  t: number,
++  dx: number,
++  dy: number,
++) => {
++  state.events.push({t, dx, dy});
++};
++
++export const clearDeltas = (state: LookState) => {
++  state.events.length = 0;
++};
++
++// Dipanggil tiap TICK_MS. Mengembalikan nilai analog (-1..1) untuk dikirim ke game.
++// Konvensi sumbu sama dengan analog native: gerak jari ke atas = nilai y negatif.
++export const stepLook = (state: LookState, now: number, cfg: LookConfig) => {
++  while (state.events.length && now - state.events[0].t > WINDOW_MS) {
++    state.events.shift();
++  }
++  let sumX = 0;
++  let sumY = 0;
++  for (const e of state.events) {
++    sumX += e.dx;
++    sumY += e.dy;
++  }
++  const gain = ((cfg.sensitivity || 1) / PX_FULL) * (TICK_MS / WINDOW_MS);
++  const targetX = clamp(sumX * gain, -1, 1);
++  const targetY = clamp(sumY * gain * (cfg.sensitivityY || 1), -1, 1);
++  const keep = clamp(cfg.smoothing || 0, 0, 0.9);
++  state.outX += (targetX - state.outX) * (1 - keep);
++  state.outY += (targetY - state.outY) * (1 - keep);
++  return {x: state.outX, y: cfg.invertY ? -state.outY : state.outY};
++};
++
++export const isLookIdle = (state: LookState) =>
++  state.events.length === 0 &&
++  Math.abs(state.outX) < IDLE_LIMIT &&
++  Math.abs(state.outY) < IDLE_LIMIT;
