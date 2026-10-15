@@ -33,6 +33,13 @@ type Props = {
     sensLeft: number;
     sensRight: number;
   };
+  look: {
+    enabled: boolean;
+    sens: number;
+    sensY: number;
+    smooth: number;
+    invertY: boolean;
+  };
   joystick: number;
   macroEnabled: boolean;
   profile: string;
@@ -531,6 +538,45 @@ const InGameMenu = (props: Props) => {
       ),
     );
 
+    body.push(section('s_look', t('IgmSectionLook')));
+    body.push(
+      toggleRow('touch_look', t('IgmTouchLook'), props.look.enabled, () =>
+        props.onChangeSetting({virtual_touch_look: !props.look.enabled}),
+      ),
+    );
+    body.push(
+      stepper(
+        'look_sens',
+        t('IgmLookSens'),
+        mult(props.look.sens),
+        () => adjust('virtual_look_sens', props.look.sens, -0.1, 0.5, 3),
+        () => adjust('virtual_look_sens', props.look.sens, 0.1, 0.5, 3),
+      ),
+    );
+    body.push(
+      stepper(
+        'look_sens_y',
+        t('IgmLookSensY'),
+        mult(props.look.sensY),
+        () => adjust('virtual_look_sens_y', props.look.sensY, -0.1, 0.5, 1.5),
+        () => adjust('virtual_look_sens_y', props.look.sensY, 0.1, 0.5, 1.5),
+      ),
+    );
+    body.push(
+      stepper(
+        'look_smooth',
+        t('IgmLookSmooth'),
+        pct(props.look.smooth),
+        () => adjust('virtual_look_smooth', props.look.smooth, -0.1, 0, 0.8),
+        () => adjust('virtual_look_smooth', props.look.smooth, 0.1, 0, 0.8),
+      ),
+    );
+    body.push(
+      toggleRow('look_invert', t('IgmLookInvert'), props.look.invertY, () =>
+        props.onChangeSetting({virtual_look_invert_y: !props.look.invertY}),
+      ),
+    );
+
     body.push(section('s_layout', t('IgmSectionLayout')));
     body.push(
       segment(
@@ -600,6 +646,10 @@ const InGameMenu = (props: Props) => {
             virtual_stick_deadzone: 0.1,
             virtual_stick_sens_left: 1,
             virtual_stick_sens_right: 1,
+            virtual_look_sens: 1,
+            virtual_look_sens_y: 1,
+            virtual_look_smooth: 0.3,
+            virtual_look_invert_y: false,
           }),
         {desc: t('IgmResetControlsDesc')},
       ),

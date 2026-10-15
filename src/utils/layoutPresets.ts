@@ -29,6 +29,7 @@ export const modeFromProfile = (profile: string): LayoutMode | null => {
 export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
   normal: {
     virtual_gamepad_skin: 'xbox',
+    virtual_touch_look: false,
     virtual_gamepad_joystick: 1,
     virtual_stick_deadzone: 0.1,
     virtual_stick_sens_left: 1,
@@ -36,14 +37,16 @@ export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
   },
   playstation: {
     virtual_gamepad_skin: 'ps',
+    virtual_touch_look: false,
     virtual_gamepad_joystick: 1,
     virtual_stick_deadzone: 0.1,
     virtual_stick_sens_left: 1,
     virtual_stick_sens_right: 1,
   },
-  // Membidik dengan menyeret di separuh kanan layar; stick tidak ikut jari
-  // supaya bidikan tidak "lepas" saat jari ditarik jauh.
+  // Kamera diputar dengan menggeser layar (tanpa analog kanan). Analog kiri
+  // memakai mode Pindah seperti game mobile pada umumnya.
   fps: {
+    virtual_touch_look: true,
     virtual_gamepad_joystick: 2,
     virtual_stick_deadzone: 0.05,
     virtual_stick_sens_left: 1,
@@ -51,6 +54,7 @@ export const MODE_SETTINGS: Record<LayoutMode, Record<string, any>> = {
   },
   // Kemudi dengan analog kiri tetap di tempatnya.
   racing: {
+    virtual_touch_look: false,
     virtual_gamepad_joystick: 0,
     virtual_stick_deadzone: 0.1,
     virtual_stick_sens_left: 1,

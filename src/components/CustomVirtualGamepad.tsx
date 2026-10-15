@@ -3,6 +3,7 @@ import {StyleSheet, View, Dimensions} from 'react-native';
 import GamepadButton from './CustomGamepad/GamepadButton';
 import DPadView from './DPadView';
 import AnalogStick from '../components/AnalogStick';
+import TouchLookArea from './TouchLookArea';
 import {getSettings as getLocalSettings} from '../store/settingStore';
 import {getSettings} from '../store/gamepadStore';
 import {
@@ -22,6 +23,7 @@ type Props = {
   onPressIn: (name: string | string[]) => any;
   onPressOut: (name: string | string[]) => any;
   onStickMove: (id: string, position: any) => any;
+  onLookMove?: (x: number, y: number) => void;
   refreshKey?: number;
 };
 
@@ -31,6 +33,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
   onPressIn,
   onPressOut,
   onStickMove,
+  onLookMove,
   refreshKey = 0,
 }) => {
   const [buttons, setButtons] = React.useState<any>([]);
@@ -80,6 +83,18 @@ const CustomVirtualGamepad: React.FC<Props> = ({
 
   return (
     <View style={styles.wrap} pointerEvents="box-none">
+      {localSettings.virtual_touch_look && onLookMove ? (
+        <TouchLookArea
+          onLook={onLookMove as any}
+          sensitivity={localSettings.virtual_look_sens ?? 1}
+          sensitivityY={localSettings.virtual_look_sens_y ?? 1}
+          smoothing={localSettings.virtual_look_smooth ?? 0.3}
+          invertY={!!localSettings.virtual_look_invert_y}
+          width="50%"
+          height="100%"
+        />
+      ) : null}
+
       {buttons.map((button: any) => {
         if (!button.show) {
           return null;
@@ -166,6 +181,9 @@ const CustomVirtualGamepad: React.FC<Props> = ({
             );
           }
         } else if (button.name === 'RightStick') {
+          if (localSettings.virtual_touch_look && onLookMove) {
+            return null;
+          }
           const stickScale = stickScaleBase * (button.scale ?? 1);
           if (
             localSettings.virtual_gamepad_joystick === 1 ||

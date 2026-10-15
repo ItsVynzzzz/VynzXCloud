@@ -2504,6 +2504,16 @@ export function NativeStreamScreenBase({
     }
   };
 
+  // Kamera geser layar: nilai sudah berupa kecepatan jari yang dinormalkan,
+  // jadi langsung dikirim sebagai analog kanan (tanpa kurva sensitivitas analog).
+  const handleLookMove = (x: number, y: number) => {
+    const lookX = Number(x.toFixed(2));
+    const lookY = Number(y.toFixed(2));
+    isRightstickMoving.current = lookX !== 0 || lookY !== 0;
+    gpState.RightThumbXAxis = lookX;
+    gpState.RightThumbYAxis = lookY;
+  };
+
   const requestExit = React.useCallback(
     (off = false) => {
       clearMacroTimers();
@@ -2833,6 +2843,7 @@ export function NativeStreamScreenBase({
           onPressIn={handleButtonPressIn}
           onPressOut={handleButtonPressOut}
           onStickMove={handleStickMove}
+          onLookMove={handleLookMove}
           refreshKey={gamepadLayoutVersion}
         />
       );
@@ -2843,6 +2854,7 @@ export function NativeStreamScreenBase({
           onPressIn={handleButtonPressIn}
           onPressOut={handleButtonPressOut}
           onStickMove={handleStickMove}
+          onLookMove={handleLookMove}
         />
       );
     }
@@ -3105,6 +3117,13 @@ export function NativeStreamScreenBase({
           deadzone: settings.virtual_stick_deadzone ?? 0.1,
           sensLeft: settings.virtual_stick_sens_left ?? 1,
           sensRight: settings.virtual_stick_sens_right ?? 1,
+        }}
+        look={{
+          enabled: !!settings.virtual_touch_look,
+          sens: settings.virtual_look_sens ?? 1,
+          sensY: settings.virtual_look_sens_y ?? 1,
+          smooth: settings.virtual_look_smooth ?? 0.3,
+          invertY: !!settings.virtual_look_invert_y,
         }}
         macroEnabled={!!settings.virtual_macro_enabled}
         profile={settings.custom_virtual_gamepad || ''}

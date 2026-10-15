@@ -25,6 +25,7 @@ import {
   ensureVirtualDPadLayoutButton,
 } from '../utils/virtualDPad';
 import {buildPresetLayout, modeFromProfile} from '../utils/layoutPresets';
+import {getSettings as getAppSettings} from '../store/settingStore';
 
 export type ButtonConfig = {
   name: string;
@@ -395,6 +396,9 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
     );
   };
 
+  // Saat kamera geser layar aktif, analog kanan tidak dipakai: separuh kanan layar jadi area kamera.
+  const touchLook = !!getAppSettings().virtual_touch_look;
+
   if (!visible) {
     return null;
   }
@@ -409,7 +413,15 @@ const VirtualGamepadEditor: React.FC<VirtualGamepadEditorProps> = ({
           />
         ) : null}
 
-        {buttons.map(button => (
+        {touchLook ? (
+          <View pointerEvents="none" style={styles.lookZone}>
+            <Text style={styles.lookZoneText}>{t('EdLookZone')}</Text>
+          </View>
+        ) : null}
+
+        {buttons
+          .filter(button => !(touchLook && button.name === 'RightStick'))
+          .map(button => (
           <EditorItem
             key={button.name}
             button={button}
@@ -494,6 +506,23 @@ const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.62)',
+  },
+  lookZone: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: '50%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  lookZoneText: {
+    color: 'rgba(255, 255, 255, 0.4)',
+    fontSize: 13,
+    fontWeight: '600',
   },
   item: {
     position: 'absolute',

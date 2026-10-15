@@ -95,6 +95,55 @@ const vgamepad = [
       {value: 'ps', text: 'PlayStation'},
     ],
   },
+  {
+    name: 'virtual_touch_look',
+    type: 'radio',
+    title: t('IgmTouchLook'),
+    description: t('VLookDesc'),
+    data: [
+      {value: false, text: t('Disable')},
+      {value: true, text: t('Enable')},
+    ],
+  },
+  {
+    name: 'virtual_look_sens',
+    type: 'slider',
+    min: 0.5,
+    max: 3,
+    step: 0.1,
+    title: t('IgmLookSens'),
+    description: t('VLookSensDesc'),
+    data: [],
+  },
+  {
+    name: 'virtual_look_sens_y',
+    type: 'slider',
+    min: 0.5,
+    max: 1.5,
+    step: 0.1,
+    title: t('IgmLookSensY'),
+    description: t('VLookSensYDesc'),
+    data: [],
+  },
+  {
+    name: 'virtual_look_smooth',
+    type: 'slider',
+    min: 0,
+    max: 0.8,
+    step: 0.1,
+    title: t('IgmLookSmooth'),
+    description: t('VLookSmoothDesc'),
+    data: [],
+  },
+  {
+    name: 'virtual_look_invert_y',
+    type: 'radio',
+    title: t('IgmLookInvert'),
+    data: [
+      {value: false, text: t('Disable')},
+      {value: true, text: t('Enable')},
+    ],
+  },
 ];
 
 export default vgamepad;

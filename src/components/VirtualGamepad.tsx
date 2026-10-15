@@ -6,6 +6,7 @@ import DPadView from './DPadView';
 import GamepadButton from './GamepadButton';
 import {getSettings} from '../store/settingStore';
 import {skinButtonName} from '../utils/gamepadSkin';
+import TouchLookArea from './TouchLookArea';
 import {VIRTUAL_MACRO_BUTTON_NAME} from '../utils/virtualMacro';
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
   onPressIn: (name: string | string[]) => any;
   onPressOut: (name: string | string[]) => any;
   onStickMove: (id: string, position: any) => any;
+  onLookMove?: (x: number, y: number) => void;
 };
 
 const VirtualGamepad: React.FC<Props> = ({
@@ -20,6 +22,7 @@ const VirtualGamepad: React.FC<Props> = ({
   onPressIn,
   onPressOut,
   onStickMove,
+  onLookMove,
 }) => {
   const settings = getSettings();
   const buttonScale = settings.virtual_button_scale ?? 1;
@@ -27,6 +30,7 @@ const VirtualGamepad: React.FC<Props> = ({
   const deadZone = settings.virtual_stick_deadzone ?? 0.1;
   const btnScale = {transform: [{scale: buttonScale}]};
   const stickBoxScale = {transform: [{scale: stickScale}]};
+  const touchLookActive = !!settings.virtual_touch_look && !!onLookMove;
 
   const handlePressIn = (name: string | string[]) => {
     onPressIn && onPressIn(name);
@@ -193,7 +197,17 @@ const VirtualGamepad: React.FC<Props> = ({
         </View>
       ) : null}
 
-      {settings.virtual_gamepad_joystick === 1 ||
+      {touchLookActive ? (
+        <TouchLookArea
+          onLook={onLookMove as any}
+          sensitivity={settings.virtual_look_sens ?? 1}
+          sensitivityY={settings.virtual_look_sens_y ?? 1}
+          smoothing={settings.virtual_look_smooth ?? 0.3}
+          invertY={!!settings.virtual_look_invert_y}
+          width="50%"
+          height="100%"
+        />
+      ) : settings.virtual_gamepad_joystick === 1 ||
       settings.virtual_gamepad_joystick === 2 ? (
         <View
           // eslint-disable-next-line react-native/no-inline-styles
@@ -234,7 +248,7 @@ const VirtualGamepad: React.FC<Props> = ({
         </View>
       ) : null}
 
-      {settings.virtual_gamepad_joystick === 0 ? (
+      {settings.virtual_gamepad_joystick === 0 && !touchLookActive ? (
         <View style={[styles.button, styles.rightJs, {opacity}, stickBoxScale]}>
           <AnalogStick
             style={styles.analogStick}
