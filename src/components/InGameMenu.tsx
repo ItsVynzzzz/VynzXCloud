@@ -38,6 +38,7 @@ type Props = {
     sens: number;
     sensY: number;
     smooth: number;
+    deadzone: number;
     invertY: boolean;
   };
   joystick: number;
@@ -549,8 +550,8 @@ const InGameMenu = (props: Props) => {
         'look_sens',
         t('IgmLookSens'),
         mult(props.look.sens),
-        () => adjust('virtual_look_sens', props.look.sens, -0.1, 0.5, 3),
-        () => adjust('virtual_look_sens', props.look.sens, 0.1, 0.5, 3),
+        () => adjust('virtual_look_speed', props.look.sens, -0.1, 0.5, 4),
+        () => adjust('virtual_look_speed', props.look.sens, 0.1, 0.5, 4),
       ),
     );
     body.push(
@@ -569,6 +570,15 @@ const InGameMenu = (props: Props) => {
         pct(props.look.smooth),
         () => adjust('virtual_look_smooth', props.look.smooth, -0.1, 0, 0.8),
         () => adjust('virtual_look_smooth', props.look.smooth, 0.1, 0, 0.8),
+      ),
+    );
+    body.push(
+      stepper(
+        'look_deadzone',
+        t('IgmLookDeadzone'),
+        pct(props.look.deadzone),
+        () => adjust('virtual_look_deadzone', props.look.deadzone, -0.05, 0, 0.5),
+        () => adjust('virtual_look_deadzone', props.look.deadzone, 0.05, 0, 0.5),
       ),
     );
     body.push(
@@ -646,9 +656,10 @@ const InGameMenu = (props: Props) => {
             virtual_stick_deadzone: 0.1,
             virtual_stick_sens_left: 1,
             virtual_stick_sens_right: 1,
-            virtual_look_sens: 1,
+            virtual_look_speed: 1.5,
             virtual_look_sens_y: 1,
-            virtual_look_smooth: 0.3,
+            virtual_look_smooth: 0.1,
+            virtual_look_deadzone: 0.25,
             virtual_look_invert_y: false,
           }),
         {desc: t('IgmResetControlsDesc')},

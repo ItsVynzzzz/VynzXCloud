@@ -713,5 +713,7 @@ export default {
     VLookSensDesc: 'Higher values turn the camera further for the same finger movement.',
     VLookSensYDesc: 'Extra multiplier for up-down movement. Lower it if vertical aim is too wild.',
     VLookSmoothDesc: 'Higher values make camera movement smoother but slightly slower to respond.',
+    IgmLookDeadzone: 'Game dead zone compensation',
+    VLookDeadzoneDesc: 'Many games ignore small stick movements. Raise it if slow swipes do not turn the camera, lower it if the camera drifts.',
   },
 };

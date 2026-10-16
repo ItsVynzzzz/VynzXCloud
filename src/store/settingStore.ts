@@ -70,7 +70,8 @@ export type Settings = {
   virtual_stick_sens_right: number;
   virtual_gamepad_skin: string;
   virtual_touch_look: boolean;
-  virtual_look_sens: number;
+  virtual_look_speed: number;
+  virtual_look_deadzone: number;
   virtual_look_sens_y: number;
   virtual_look_smooth: number;
   virtual_look_invert_y: boolean;
@@ -165,9 +166,10 @@ const defaultSettings: Settings = {
   virtual_stick_sens_right: 1,
   virtual_gamepad_skin: 'xbox',
   virtual_touch_look: false,
-  virtual_look_sens: 1,
+  virtual_look_speed: 1.5,
+  virtual_look_deadzone: 0.25,
   virtual_look_sens_y: 1,
-  virtual_look_smooth: 0.3,
+  virtual_look_smooth: 0.1,
   virtual_look_invert_y: false,
   virtual_macro_enabled: false,
   virtual_macro_loop_enabled: false,

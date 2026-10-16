@@ -23,7 +23,8 @@ public class AnalogStickPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
-                new AnalogStickViewManager()
+                new AnalogStickViewManager(),
+                new TouchLookViewManager()
         );
     }
 }

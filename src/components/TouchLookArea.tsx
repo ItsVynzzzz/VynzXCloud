@@ -1,19 +1,19 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import {
-  LookConfig,
-  TICK_MS,
-  clearDeltas,
-  isLookIdle,
-  newLookState,
-  pushDelta,
-  stepLook,
-} from '../utils/touchLook';
+import {StyleSheet, requireNativeComponent} from 'react-native';
 
-type Props = LookConfig & {
+// View native (TouchLookView.java): sentuhan ditangkap langsung di sisi Android,
+// jadi tetap stabil walau thread JS sedang sibuk.
+const RNTouchLook: any = requireNativeComponent('TouchLookView');
+
+type Props = {
   onLook: (x: number, y: number) => void;
   width: number | string;
   height: number | string;
+  speed: number;
+  speedY: number;
+  smoothing: number;
+  antiDeadZone: number;
+  invertY: boolean;
 };
 
 // Area transparan di separuh kanan layar. Menggeser jari di sini memutar kamera.
@@ -22,110 +22,36 @@ const TouchLookArea = ({
   onLook,
   width,
   height,
-  sensitivity,
-  sensitivityY,
+  speed,
+  speedY,
   smoothing,
+  antiDeadZone,
   invertY,
 }: Props) => {
-  const latest = React.useRef({
-    onLook,
-    cfg: {sensitivity, sensitivityY, smoothing, invertY},
-  });
-  latest.current = {
-    onLook,
-    cfg: {sensitivity, sensitivityY, smoothing, invertY},
-  };
+  const latest = React.useRef(onLook);
+  latest.current = onLook;
 
-  const state = React.useRef(newLookState());
-  const activeId = React.useRef<string | number | null>(null);
-  const last = React.useRef({x: 0, y: 0});
-  const timer = React.useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const stopTimer = React.useCallback(() => {
-    if (timer.current) {
-      clearInterval(timer.current);
-      timer.current = null;
-    }
+  const handleChange = React.useCallback((event: any) => {
+    latest.current(event.nativeEvent.x, event.nativeEvent.y);
   }, []);
 
-  const tick = React.useCallback(() => {
-    const out = stepLook(state.current, Date.now(), latest.current.cfg);
-    if (activeId.current === null && isLookIdle(state.current)) {
-      state.current.outX = 0;
-      state.current.outY = 0;
-      latest.current.onLook(0, 0);
-      stopTimer();
-      return;
-    }
-    latest.current.onLook(out.x, out.y);
-  }, [stopTimer]);
-
-  const startTimer = React.useCallback(() => {
-    if (!timer.current) {
-      timer.current = setInterval(tick, TICK_MS);
-    }
-  }, [tick]);
-
+  // Pastikan kamera berhenti kalau area dilepas saat jari masih menyentuh.
   React.useEffect(
     () => () => {
-      stopTimer();
-      latest.current.onLook(0, 0);
+      latest.current(0, 0);
     },
-    [stopTimer],
+    [],
   );
 
-  const onTouchStart = (e: any) => {
-    if (activeId.current !== null) {
-      return;
-    }
-    const touch = e.nativeEvent.changedTouches[0];
-    if (!touch) {
-      return;
-    }
-    activeId.current = touch.identifier;
-    last.current = {x: touch.pageX, y: touch.pageY};
-    clearDeltas(state.current);
-    startTimer();
-  };
-
-  const onTouchMove = (e: any) => {
-    if (activeId.current === null) {
-      return;
-    }
-    const touches = e.nativeEvent.changedTouches as any[];
-    const touch = touches.find(item => item.identifier === activeId.current);
-    if (!touch) {
-      return;
-    }
-    pushDelta(
-      state.current,
-      Date.now(),
-      touch.pageX - last.current.x,
-      touch.pageY - last.current.y,
-    );
-    last.current = {x: touch.pageX, y: touch.pageY};
-  };
-
-  const onTouchEnd = (e: any) => {
-    if (activeId.current === null) {
-      return;
-    }
-    const touches = e.nativeEvent.changedTouches as any[];
-    if (touches.some(item => item.identifier === activeId.current)) {
-      activeId.current = null;
-      // Jari diangkat: kamera berhenti, tidak "meluncur" terus.
-      clearDeltas(state.current);
-    }
-  };
-
   return (
-    <View
-      collapsable={false}
+    <RNTouchLook
       style={[styles.area, {width, height}]}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      onTouchCancel={onTouchEnd}
+      speed={speed}
+      speedY={speedY}
+      smoothing={smoothing}
+      antiDeadZone={antiDeadZone}
+      invertY={invertY}
+      onTouchLookChange={handleChange}
     />
   );
 };

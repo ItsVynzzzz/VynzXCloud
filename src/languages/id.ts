@@ -719,5 +719,7 @@ export default {
     VLookSensDesc: 'Makin tinggi, makin jauh kamera berputar untuk gerakan jari yang sama.',
     VLookSensYDesc: 'Pengali tambahan untuk gerakan atas-bawah. Turunkan jika bidikan vertikal terlalu liar.',
     VLookSmoothDesc: 'Makin tinggi, gerakan kamera makin halus tetapi sedikit lebih lambat merespons.',
+    IgmLookDeadzone: 'Kompensasi zona mati game',
+    VLookDeadzoneDesc: 'Banyak game mengabaikan gerakan analog yang kecil. Naikkan jika geseran pelan tidak memutar kamera, turunkan jika kamera bergerak sendiri.',
   },
 };

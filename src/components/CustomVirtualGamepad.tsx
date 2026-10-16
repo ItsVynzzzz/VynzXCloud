@@ -86,9 +86,10 @@ const CustomVirtualGamepad: React.FC<Props> = ({
       {localSettings.virtual_touch_look && onLookMove ? (
         <TouchLookArea
           onLook={onLookMove as any}
-          sensitivity={localSettings.virtual_look_sens ?? 1}
-          sensitivityY={localSettings.virtual_look_sens_y ?? 1}
-          smoothing={localSettings.virtual_look_smooth ?? 0.3}
+          speed={localSettings.virtual_look_speed ?? 1.5}
+          speedY={localSettings.virtual_look_sens_y ?? 1}
+          smoothing={localSettings.virtual_look_smooth ?? 0.1}
+          antiDeadZone={localSettings.virtual_look_deadzone ?? 0.25}
           invertY={!!localSettings.virtual_look_invert_y}
           width="50%"
           height="100%"
