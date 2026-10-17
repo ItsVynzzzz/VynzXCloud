@@ -3122,7 +3122,7 @@ export function NativeStreamScreenBase({
           enabled: !!settings.virtual_touch_look,
           sens: settings.virtual_look_speed ?? 1.5,
           deadzone: settings.virtual_look_deadzone ?? 0.25,
-          sensY: settings.virtual_look_sens_y ?? 1,
+          sensY: settings.virtual_look_speed_y ?? 1.6,
           smooth: settings.virtual_look_smooth ?? 0.1,
           invertY: !!settings.virtual_look_invert_y,
         }}

@@ -72,7 +72,7 @@ export type Settings = {
   virtual_touch_look: boolean;
   virtual_look_speed: number;
   virtual_look_deadzone: number;
-  virtual_look_sens_y: number;
+  virtual_look_speed_y: number;
   virtual_look_smooth: number;
   virtual_look_invert_y: boolean;
   custom_virtual_gamepad: string;
@@ -168,7 +168,7 @@ const defaultSettings: Settings = {
   virtual_touch_look: false,
   virtual_look_speed: 1.5,
   virtual_look_deadzone: 0.25,
-  virtual_look_sens_y: 1,
+  virtual_look_speed_y: 1.6,
   virtual_look_smooth: 0.1,
   virtual_look_invert_y: false,
   virtual_macro_enabled: false,

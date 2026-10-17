@@ -711,7 +711,7 @@ export default {
     EdLookZone: 'Camera area: swipe the screen here',
     VLookDesc: 'Swipe in the right half of the screen to turn the camera, without the right stick. The camera stops when your finger stops.',
     VLookSensDesc: 'Higher values turn the camera further for the same finger movement.',
-    VLookSensYDesc: 'Extra multiplier for up-down movement. Lower it if vertical aim is too wild.',
+    VLookSensYDesc: 'Camera speed when you swipe up or down. The screen is shorter than it is wide, so vertical movement usually needs a boost to feel balanced.',
     VLookSmoothDesc: 'Higher values make camera movement smoother but slightly slower to respond.',
     IgmLookDeadzone: 'Game dead zone compensation',
     VLookDeadzoneDesc: 'Many games ignore small stick movements. Raise it if slow swipes do not turn the camera, lower it if the camera drifts.',

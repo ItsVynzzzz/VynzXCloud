@@ -116,10 +116,10 @@ const vgamepad = [
     data: [],
   },
   {
-    name: 'virtual_look_sens_y',
+    name: 'virtual_look_speed_y',
     type: 'slider',
     min: 0.5,
-    max: 1.5,
+    max: 4,
     step: 0.1,
     title: t('IgmLookSensY'),
     description: t('VLookSensYDesc'),

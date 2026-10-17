@@ -717,7 +717,7 @@ export default {
     EdLookZone: 'Area kamera: geser layar di sini',
     VLookDesc: 'Geser jari di separuh kanan layar untuk memutar kamera, tanpa analog kanan. Kamera berhenti saat jari berhenti.',
     VLookSensDesc: 'Makin tinggi, makin jauh kamera berputar untuk gerakan jari yang sama.',
-    VLookSensYDesc: 'Pengali tambahan untuk gerakan atas-bawah. Turunkan jika bidikan vertikal terlalu liar.',
+    VLookSensYDesc: 'Kecepatan kamera saat jari digeser naik-turun. Layar lebih pendek dari lebarnya, jadi gerakan vertikal biasanya perlu dinaikkan agar terasa seimbang.',
     VLookSmoothDesc: 'Makin tinggi, gerakan kamera makin halus tetapi sedikit lebih lambat merespons.',
     IgmLookDeadzone: 'Kompensasi zona mati game',
     VLookDeadzoneDesc: 'Banyak game mengabaikan gerakan analog yang kecil. Naikkan jika geseran pelan tidak memutar kamera, turunkan jika kamera bergerak sendiri.',

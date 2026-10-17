@@ -559,8 +559,8 @@ const InGameMenu = (props: Props) => {
         'look_sens_y',
         t('IgmLookSensY'),
         mult(props.look.sensY),
-        () => adjust('virtual_look_sens_y', props.look.sensY, -0.1, 0.5, 1.5),
-        () => adjust('virtual_look_sens_y', props.look.sensY, 0.1, 0.5, 1.5),
+        () => adjust('virtual_look_speed_y', props.look.sensY, -0.1, 0.5, 4),
+        () => adjust('virtual_look_speed_y', props.look.sensY, 0.1, 0.5, 4),
       ),
     );
     body.push(
@@ -657,7 +657,7 @@ const InGameMenu = (props: Props) => {
             virtual_stick_sens_left: 1,
             virtual_stick_sens_right: 1,
             virtual_look_speed: 1.5,
-            virtual_look_sens_y: 1,
+            virtual_look_speed_y: 1.6,
             virtual_look_smooth: 0.1,
             virtual_look_deadzone: 0.25,
             virtual_look_invert_y: false,
