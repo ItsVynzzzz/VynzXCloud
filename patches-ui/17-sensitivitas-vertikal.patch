@@ -1,0 +1,128 @@
+diff --git a/src/common/settings/vgamepad.ts b/src/common/settings/vgamepad.ts
+index ff87d0e..fd3dc4b 100644
+--- a/src/common/settings/vgamepad.ts
++++ b/src/common/settings/vgamepad.ts
+@@ -116,10 +116,10 @@ const vgamepad = [
+     data: [],
+   },
+   {
+-    name: 'virtual_look_sens_y',
++    name: 'virtual_look_speed_y',
+     type: 'slider',
+     min: 0.5,
+-    max: 1.5,
++    max: 4,
+     step: 0.1,
+     title: t('IgmLookSensY'),
+     description: t('VLookSensYDesc'),
+diff --git a/src/components/CustomVirtualGamepad.tsx b/src/components/CustomVirtualGamepad.tsx
+index 4f4b421..e29ef26 100644
+--- a/src/components/CustomVirtualGamepad.tsx
++++ b/src/components/CustomVirtualGamepad.tsx
+@@ -87,7 +87,7 @@ const CustomVirtualGamepad: React.FC<Props> = ({
+         <TouchLookArea
+           onLook={onLookMove as any}
+           speed={localSettings.virtual_look_speed ?? 1.5}
+-          speedY={localSettings.virtual_look_sens_y ?? 1}
++          speedY={localSettings.virtual_look_speed_y ?? 1.6}
+           smoothing={localSettings.virtual_look_smooth ?? 0.1}
+           antiDeadZone={localSettings.virtual_look_deadzone ?? 0.25}
+           invertY={!!localSettings.virtual_look_invert_y}
+diff --git a/src/components/InGameMenu.tsx b/src/components/InGameMenu.tsx
+index 2612832..f2ee47d 100644
+--- a/src/components/InGameMenu.tsx
++++ b/src/components/InGameMenu.tsx
+@@ -559,8 +559,8 @@ const InGameMenu = (props: Props) => {
+         'look_sens_y',
+         t('IgmLookSensY'),
+         mult(props.look.sensY),
+-        () => adjust('virtual_look_sens_y', props.look.sensY, -0.1, 0.5, 1.5),
+-        () => adjust('virtual_look_sens_y', props.look.sensY, 0.1, 0.5, 1.5),
++        () => adjust('virtual_look_speed_y', props.look.sensY, -0.1, 0.5, 4),
++        () => adjust('virtual_look_speed_y', props.look.sensY, 0.1, 0.5, 4),
+       ),
+     );
+     body.push(
+@@ -657,7 +657,7 @@ const InGameMenu = (props: Props) => {
+             virtual_stick_sens_left: 1,
+             virtual_stick_sens_right: 1,
+             virtual_look_speed: 1.5,
+-            virtual_look_sens_y: 1,
++            virtual_look_speed_y: 1.6,
+             virtual_look_smooth: 0.1,
+             virtual_look_deadzone: 0.25,
+             virtual_look_invert_y: false,
+diff --git a/src/components/VirtualGamepad.tsx b/src/components/VirtualGamepad.tsx
+index 1dec217..bee0f70 100644
+--- a/src/components/VirtualGamepad.tsx
++++ b/src/components/VirtualGamepad.tsx
+@@ -201,7 +201,7 @@ const VirtualGamepad: React.FC<Props> = ({
+         <TouchLookArea
+           onLook={onLookMove as any}
+           speed={settings.virtual_look_speed ?? 1.5}
+-          speedY={settings.virtual_look_sens_y ?? 1}
++          speedY={settings.virtual_look_speed_y ?? 1.6}
+           smoothing={settings.virtual_look_smooth ?? 0.1}
+           antiDeadZone={settings.virtual_look_deadzone ?? 0.25}
+           invertY={!!settings.virtual_look_invert_y}
+diff --git a/src/languages/en.ts b/src/languages/en.ts
+index 71ef668..d5e5ddf 100644
+--- a/src/languages/en.ts
++++ b/src/languages/en.ts
+@@ -711,7 +711,7 @@ export default {
+     EdLookZone: 'Camera area: swipe the screen here',
+     VLookDesc: 'Swipe in the right half of the screen to turn the camera, without the right stick. The camera stops when your finger stops.',
+     VLookSensDesc: 'Higher values turn the camera further for the same finger movement.',
+-    VLookSensYDesc: 'Extra multiplier for up-down movement. Lower it if vertical aim is too wild.',
++    VLookSensYDesc: 'Camera speed when you swipe up or down. The screen is shorter than it is wide, so vertical movement usually needs a boost to feel balanced.',
+     VLookSmoothDesc: 'Higher values make camera movement smoother but slightly slower to respond.',
+     IgmLookDeadzone: 'Game dead zone compensation',
+     VLookDeadzoneDesc: 'Many games ignore small stick movements. Raise it if slow swipes do not turn the camera, lower it if the camera drifts.',
+diff --git a/src/languages/id.ts b/src/languages/id.ts
+index 380445f..86f2bfa 100644
+--- a/src/languages/id.ts
++++ b/src/languages/id.ts
+@@ -717,7 +717,7 @@ export default {
+     EdLookZone: 'Area kamera: geser layar di sini',
+     VLookDesc: 'Geser jari di separuh kanan layar untuk memutar kamera, tanpa analog kanan. Kamera berhenti saat jari berhenti.',
+     VLookSensDesc: 'Makin tinggi, makin jauh kamera berputar untuk gerakan jari yang sama.',
+-    VLookSensYDesc: 'Pengali tambahan untuk gerakan atas-bawah. Turunkan jika bidikan vertikal terlalu liar.',
++    VLookSensYDesc: 'Kecepatan kamera saat jari digeser naik-turun. Layar lebih pendek dari lebarnya, jadi gerakan vertikal biasanya perlu dinaikkan agar terasa seimbang.',
+     VLookSmoothDesc: 'Makin tinggi, gerakan kamera makin halus tetapi sedikit lebih lambat merespons.',
+     IgmLookDeadzone: 'Kompensasi zona mati game',
+     VLookDeadzoneDesc: 'Banyak game mengabaikan gerakan analog yang kecil. Naikkan jika geseran pelan tidak memutar kamera, turunkan jika kamera bergerak sendiri.',
+diff --git a/src/pages/NativeStream.tsx b/src/pages/NativeStream.tsx
+index f7891f4..e9a0580 100644
+--- a/src/pages/NativeStream.tsx
++++ b/src/pages/NativeStream.tsx
+@@ -3122,7 +3122,7 @@ export function NativeStreamScreenBase({
+           enabled: !!settings.virtual_touch_look,
+           sens: settings.virtual_look_speed ?? 1.5,
+           deadzone: settings.virtual_look_deadzone ?? 0.25,
+-          sensY: settings.virtual_look_sens_y ?? 1,
++          sensY: settings.virtual_look_speed_y ?? 1.6,
+           smooth: settings.virtual_look_smooth ?? 0.1,
+           invertY: !!settings.virtual_look_invert_y,
+         }}
+diff --git a/src/store/settingStore.ts b/src/store/settingStore.ts
+index 442e78b..af44d07 100644
+--- a/src/store/settingStore.ts
++++ b/src/store/settingStore.ts
+@@ -72,7 +72,7 @@ export type Settings = {
+   virtual_touch_look: boolean;
+   virtual_look_speed: number;
+   virtual_look_deadzone: number;
+-  virtual_look_sens_y: number;
++  virtual_look_speed_y: number;
+   virtual_look_smooth: number;
+   virtual_look_invert_y: boolean;
+   custom_virtual_gamepad: string;
+@@ -168,7 +168,7 @@ const defaultSettings: Settings = {
+   virtual_touch_look: false,
+   virtual_look_speed: 1.5,
+   virtual_look_deadzone: 0.25,
+-  virtual_look_sens_y: 1,
++  virtual_look_speed_y: 1.6,
+   virtual_look_smooth: 0.1,
+   virtual_look_invert_y: false,
+   virtual_macro_enabled: false,
